@@ -5,16 +5,22 @@ z obrazkami, ilościami i odhaczaniem. Napisana w **React + TypeScript + Vite +
 Tailwind CSS**, hostowana jako statyczna strona na **GitHub Pages** — bez żadnego
 serwera.
 
-## Co potrafi
+## Jak to działa
 
-- 📦 **Katalog dostępnych rzeczy** — jedna rzecz = jeden wpis (zakładka „Wszystkie rzeczy”)
-- 🗂️ Rzecz może być przypisana do **wielu kategorii** naraz (np. bluza → Lato + Zima + Spacer)
-- 🔢 **Ilość wybierana osobno dla każdej kategorii** (koszulka: Lato 4 szt., Zima 4 szt.)
-- ✅ Pakowanie w ramach kategorii, pasek postępu i dźwięki
-- 🎉 Po spakowaniu całej kategorii: deszcz emoji, wielkie „SPAKOWANE!” i zielona odznaka ✓ na zakładce
-- 🖨️ Drukowanie checklisty
-- 💾 **Pamięć**: wszystko zapisuje się samo (w przeglądarce + opcjonalnie w chmurze)
-- 🕰️ **Historia**: można podejrzeć i przywrócić każdą starszą wersję listy
+- 📦 **Katalog** (zakładka „Wszystkie rzeczy”) to przestrzeń ze wszystkimi
+  stworzonymi rzeczami. Rzecz to **grafika + nazwa** — nic więcej.
+- 🗂️ **Kategorie komponujemy z katalogu**: na zakładce kategorii klikasz
+  „Dodaj z katalogu” i zaznaczasz, co ma się w niej znaleźć. Jedna rzecz może
+  należeć do wielu kategorii naraz (np. bluza → Lato + Zima + Spacer).
+- 🔢 **Ilość ustawia się tylko na głównym ekranie** kategorii — przyciskami
+  +/− na karcie rzeczy (osobno dla każdej kategorii).
+- ✅ Pakowanie odhaczamy w ramach kategorii; pasek postępu i dźwięki.
+- 🎉 Po spakowaniu całej kategorii: deszcz emoji, wielkie „SPAKOWANE!”
+  i zielona odznaka ✓ na zakładce.
+- 🖨️ Drukowanie checklisty.
+- 💾 **Pamięć**: wszystko zapisuje się samo (w przeglądarce + opcjonalnie
+  w chmurze GitHub Gist).
+- 🕰️ **Historia**: można podejrzeć i przywrócić każdą starszą wersję listy.
 
 ## Praca lokalna
 
