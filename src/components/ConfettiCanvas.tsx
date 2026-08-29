@@ -7,15 +7,22 @@ export interface ConfettiHandle {
 interface Particle {
   x: number;
   y: number;
-  vx: number;
   vy: number;
+  swaySpeed: number;
+  swayAmount: number;
+  phase: number;
+  rotation: number;
+  rotationSpeed: number;
+  emoji: string;
   size: number;
-  color: string;
-  life: number;
 }
 
-const COLORS = ['#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#8B5CF6'];
+const PARTY_EMOJIS = ['🎉', '🎒', '⭐', '🧦', '👕', '🧸', '🧢', '✨', '🩳', '🧃', '👟', '💛'];
 
+/**
+ * Zabawny deszcz emoji z góry ekranu — wystrzeliwuje,
+ * gdy cała kategoria zostanie spakowana.
+ */
 export const ConfettiCanvas = forwardRef<ConfettiHandle>(function ConfettiCanvas(_props, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -31,15 +38,18 @@ export const ConfettiCanvas = forwardRef<ConfettiHandle>(function ConfettiCanvas
       canvas.height = window.innerHeight;
 
       const particles: Particle[] = [];
-      for (let i = 0; i < 85; i++) {
+      for (let i = 0; i < 60; i++) {
         particles.push({
-          x: canvas.width / 2,
-          y: canvas.height / 2,
-          vx: (Math.random() - 0.5) * 14,
-          vy: (Math.random() - 0.7) * 16,
-          size: Math.random() * 8 + 4,
-          color: COLORS[Math.floor(Math.random() * COLORS.length)],
-          life: 100,
+          x: Math.random() * canvas.width,
+          y: -40 - Math.random() * canvas.height * 0.6,
+          vy: 2.2 + Math.random() * 3.5,
+          swaySpeed: 0.02 + Math.random() * 0.05,
+          swayAmount: 1.5 + Math.random() * 2.5,
+          phase: Math.random() * Math.PI * 2,
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.12,
+          emoji: PARTY_EMOJIS[Math.floor(Math.random() * PARTY_EMOJIS.length)],
+          size: 22 + Math.random() * 22,
         });
       }
 
@@ -50,17 +60,22 @@ export const ConfettiCanvas = forwardRef<ConfettiHandle>(function ConfettiCanvas
         let active = false;
 
         for (const p of particles) {
-          if (p.life <= 0) continue;
+          if (p.y > canvas.height + 50) continue;
           active = true;
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.3;
-          p.life -= 1.5;
 
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fill();
+          p.y += p.vy;
+          p.phase += p.swaySpeed;
+          p.x += Math.sin(p.phase) * p.swayAmount * 0.4;
+          p.rotation += p.rotationSpeed;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.font = `${p.size}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(p.emoji, 0, 0);
+          ctx.restore();
         }
 
         if (active) {

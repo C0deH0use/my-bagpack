@@ -1,13 +1,13 @@
 import type { PackingItem } from '../types';
+import { normalizeItems } from './items';
 
 const STORAGE_KEY = 'kids_packing_list_data_v2';
 
 export function loadStoredItems(fallback: PackingItem[]): PackingItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return fallback;
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as PackingItem[]) : fallback;
+    if (raw === null) return fallback;
+    return normalizeItems(JSON.parse(raw));
   } catch {
     return fallback;
   }

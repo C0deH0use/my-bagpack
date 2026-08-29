@@ -1,11 +1,14 @@
 export interface PackingItem {
   id: string;
-  categoryId: string;
+  /** kategorie, do których rzecz jest przypisana (≥1) */
+  categoryIds: string[];
+  /** ilość wybierana OSOBNO dla każdej kategorii (klucz = id kategorii) */
+  quantities: Record<string, number>;
+  /** kategorie, w których rzecz jest już spakowana */
+  packedIn: string[];
   name: string;
   svgKey: string;
   emoji: string;
-  quantity: number;
-  packed: boolean;
 }
 
 export interface Category {

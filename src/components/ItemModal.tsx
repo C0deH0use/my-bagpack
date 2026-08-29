@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { PackingItem } from '../types';
 import type { ItemFormValues } from '../hooks/usePackingList';
-import { CATEGORIES } from '../data/categories';
+import { ALL_CATEGORY_ID, CATEGORIES } from '../data/categories';
 import { EMOJI_LIST } from '../data/emojiList';
+import { SVG_DRAWINGS } from '../data/svgDrawings';
 import { IconClose } from './icons';
+
+/** Wybrana ikonka: albo rysunek SVG, albo emoji */
+type IconChoice = { kind: 'svg'; key: string } | { kind: 'emoji'; value: string };
 
 interface ItemModalProps {
   open: boolean;
@@ -13,35 +17,62 @@ interface ItemModalProps {
   onSubmit: (values: ItemFormValues, id?: string) => void;
 }
 
+/**
+ * Rzecz w katalogu to tylko grafika + nazwa.
+ * Przypisanie do kategorii robimy z poziomu kategorii ("Dodaj z katalogu"),
+ * a ilość — przyciskami +/− na karcie na głównym ekranie.
+ */
 export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSubmit }: ItemModalProps) {
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState(EMOJI_LIST[0]);
-  const [quantity, setQuantity] = useState(1);
-  const [categoryId, setCategoryId] = useState(defaultCategoryId);
+  const [icon, setIcon] = useState<IconChoice>({ kind: 'emoji', value: EMOJI_LIST[0] });
 
   // Za każdym otwarciem ustawiamy pola od nowa (edycja albo dodawanie)
   useEffect(() => {
     if (!open) return;
     setName(editingItem?.name ?? '');
-    setEmoji(editingItem?.emoji || EMOJI_LIST[0]);
-    setQuantity(editingItem?.quantity ?? 1);
-    setCategoryId(editingItem?.categoryId ?? defaultCategoryId);
+    setIcon(
+      editingItem?.svgKey
+        ? { kind: 'svg', key: editingItem.svgKey }
+        : { kind: 'emoji', value: editingItem?.emoji || EMOJI_LIST[0] },
+    );
     // defaultCategoryId celowo pomijamy — liczy się moment otwarcia
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
 
+  const targetCategory =
+    !editingItem && defaultCategoryId !== ALL_CATEGORY_ID
+      ? CATEGORIES.find((c) => c.id === defaultCategoryId)
+      : undefined;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
-    onSubmit({ name: trimmed, emoji, quantity, categoryId }, editingItem?.id);
+    onSubmit(
+      {
+        name: trimmed,
+        emoji: icon.kind === 'emoji' ? icon.value : editingItem?.emoji || '📦',
+        svgKey: icon.kind === 'svg' ? icon.key : '',
+      },
+      editingItem?.id,
+    );
   };
+
+  const isSelected = (option: IconChoice) =>
+    option.kind === 'svg'
+      ? icon.kind === 'svg' && icon.key === option.key
+      : icon.kind === 'emoji' && icon.value === option.value;
+
+  const optionClasses = (selected: boolean) =>
+    `rounded-xl hover:bg-indigo-100 transition border flex items-center justify-center ${
+      selected ? 'bg-indigo-100 border-indigo-400' : 'border-transparent'
+    }`;
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-slate-800">
             {editingItem ? 'Edytuj rzecz' : 'Dodaj nową rzecz'}
@@ -69,53 +100,43 @@ export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSub
 
           <div>
             <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Wybierz rysunek / ikonkę</label>
-            <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
-              {EMOJI_LIST.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setEmoji(option)}
-                  className={`text-2xl p-2 rounded-xl hover:bg-indigo-100 transition border flex items-center justify-center ${
-                    option === emoji ? 'bg-indigo-100 border-indigo-400' : 'border-transparent'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
+            <div className="max-h-52 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50 space-y-2">
+              <div className="grid grid-cols-5 gap-1.5">
+                {Object.entries(SVG_DRAWINGS).map(([key, svg]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    title={key}
+                    onClick={() => setIcon({ kind: 'svg', key })}
+                    className={`h-12 p-1.5 ${optionClasses(isSelected({ kind: 'svg', key }))}`}
+                    dangerouslySetInnerHTML={{ __html: svg }}
+                  />
+                ))}
+              </div>
+              <div className="grid grid-cols-6 gap-2">
+                {EMOJI_LIST.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setIcon({ kind: 'emoji', value: emoji })}
+                    className={`text-2xl p-2 ${optionClasses(isSelected({ kind: 'emoji', value: emoji }))}`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Ilość do zabrania</label>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                required
-                value={quantity}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
-                  setQuantity(Number.isNaN(value) ? 1 : Math.min(99, Math.max(1, value)));
-                }}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 font-bold"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Kategoria</label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 bg-white font-medium text-sm"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.icon} {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          {targetCategory && (
+            <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              Nowa rzecz trafi do katalogu i od razu do kategorii{' '}
+              <b>
+                {targetCategory.icon} {targetCategory.name}
+              </b>
+              . Ilość ustawisz przyciskami +/− na jej karcie.
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <button

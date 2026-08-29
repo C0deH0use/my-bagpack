@@ -5,6 +5,8 @@ import { loadStoredItems, storeItems } from '../lib/storage';
 import {
   clearCloudCredentials,
   fetchRevisionItems,
+  findExistingGistId,
+  getGistId,
   getToken,
   isCloudConnected,
   pullItemsFromCloud,
@@ -17,9 +19,11 @@ import {
 export interface ItemFormValues {
   name: string;
   emoji: string;
-  quantity: number;
-  categoryId: string;
+  /** klucz rysunku SVG; pusty string = pokazuj emoji zamiast rysunku */
+  svgKey: string;
 }
+
+const clampQty = (n: number) => Math.min(99, Math.max(1, n));
 
 const CLOUD_SAVE_DELAY_MS = 1200;
 
@@ -84,51 +88,98 @@ export function usePackingList() {
 
   /* ---------- akcje na liście ---------- */
 
+  /** Odhacza rzecz w RAMACH danej kategorii (ta sama rzecz w innej kategorii zostaje nietknięta) */
   const togglePacked = useCallback(
-    (id: string): PackingItem[] =>
-      commit(itemsRef.current.map((item) => (item.id === id ? { ...item, packed: !item.packed } : item))),
-    [commit],
-  );
-
-  const changeQuantity = useCallback(
-    (id: string, delta: number): PackingItem[] =>
+    (id: string, categoryId: string): PackingItem[] =>
       commit(
         itemsRef.current.map((item) => {
           if (item.id !== id) return item;
-          const quantity = Math.min(99, Math.max(1, item.quantity + delta));
-          return { ...item, quantity };
+          const packedIn = item.packedIn.includes(categoryId)
+            ? item.packedIn.filter((c) => c !== categoryId)
+            : [...item.packedIn, categoryId];
+          return { ...item, packedIn };
         }),
       ),
     [commit],
   );
 
+  /** Ilość w RAMACH danej kategorii */
+  const changeQuantity = useCallback(
+    (id: string, categoryId: string, delta: number): PackingItem[] =>
+      commit(
+        itemsRef.current.map((item) => {
+          if (item.id !== id) return item;
+          const current = item.quantities[categoryId] ?? 1;
+          return { ...item, quantities: { ...item.quantities, [categoryId]: clampQty(current + delta) } };
+        }),
+      ),
+    [commit],
+  );
+
+  /** Nowa rzecz w katalogu (grafika + nazwa). Można ją od razu przypiąć do kategorii. */
   const addItem = useCallback(
-    (values: ItemFormValues): PackingItem[] => {
+    (values: ItemFormValues, initialCategoryId?: string): PackingItem[] => {
+      const quantities: Record<string, number> = initialCategoryId ? { [initialCategoryId]: 1 } : {};
       const newItem: PackingItem = {
         id: Date.now().toString(),
-        svgKey: '',
-        packed: false,
-        ...values,
+        name: values.name,
+        emoji: values.emoji,
+        svgKey: values.svgKey,
+        quantities,
+        categoryIds: Object.keys(quantities),
+        packedIn: [],
       };
       return commit([...itemsRef.current, newItem]);
     },
     [commit],
   );
 
+  /** Edycja rzeczy = tylko nazwa i grafika (przypisania robi się z poziomu kategorii) */
   const updateItem = useCallback(
     (id: string, values: ItemFormValues): PackingItem[] =>
-      commit(itemsRef.current.map((item) => (item.id === id ? { ...item, ...values } : item))),
+      commit(
+        itemsRef.current.map((item) =>
+          item.id === id ? { ...item, name: values.name, emoji: values.emoji, svgKey: values.svgKey } : item,
+        ),
+      ),
     [commit],
   );
 
+  /** Przypina rzecz do kategorii (z ilością 1) albo odpina, gdy już jest */
+  const toggleAssignment = useCallback(
+    (id: string, categoryId: string): PackingItem[] =>
+      commit(
+        itemsRef.current.map((item) => {
+          if (item.id !== id) return item;
+          const quantities = { ...item.quantities };
+          let packedIn = item.packedIn;
+          if (categoryId in quantities) {
+            delete quantities[categoryId];
+            packedIn = packedIn.filter((c) => c !== categoryId);
+          } else {
+            quantities[categoryId] = 1;
+          }
+          return { ...item, quantities, categoryIds: Object.keys(quantities), packedIn };
+        }),
+      ),
+    [commit],
+  );
+
+  /** Usuwa rzecz na zawsze, z całego katalogu */
   const deleteItem = useCallback(
     (id: string): PackingItem[] => commit(itemsRef.current.filter((item) => item.id !== id)),
     [commit],
   );
 
+  /** Odznacza spakowanie w danej kategorii ('all' = wszędzie) */
   const resetCategory = useCallback(
     (categoryId: string): PackingItem[] =>
-      commit(itemsRef.current.map((item) => (item.categoryId === categoryId ? { ...item, packed: false } : item))),
+      commit(
+        itemsRef.current.map((item) => ({
+          ...item,
+          packedIn: categoryId === 'all' ? [] : item.packedIn.filter((c) => c !== categoryId),
+        })),
+      ),
     [commit],
   );
 
@@ -160,50 +211,63 @@ export function usePackingList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Podłączenie chmurki z poziomu ustawień. Zwraca wynik do pokazania użytkownikowi. */
+  /**
+   * Podłączenie chmurki: wystarczy sam token (PAT).
+   * Aplikacja sama szuka istniejącej chmurki na koncie GitHub,
+   * a gdy jej nie ma — tworzy nową z bieżącą listą.
+   * (Opcjonalnie można podać ID chmurki ręcznie, np. z innego konta.)
+   */
   const connectCloud = useCallback(
     async (token: string, joinGistId: string): Promise<ConnectResult> => {
       if (!token) return { ok: false, message: 'Najpierw wklej token GitHub 🙂' };
 
+      const wasConnected = isCloudConnected();
       setToken(token);
+      setSyncStatus('loading');
 
-      if (joinGistId) {
-        // Podłączamy to urządzenie do chmurki z innego urządzenia
-        setGistId(joinGistId);
-        setSyncStatus('loading');
-        try {
+      try {
+        // Skąd wziąć chmurkę: ręczne ID > zapamiętane ID > auto-wyszukiwanie na koncie
+        let gistId = joinGistId || getGistId();
+        let foundAutomatically = false;
+        if (!gistId) {
+          gistId = await findExistingGistId();
+          foundAutomatically = !!gistId;
+        }
+
+        if (gistId) {
+          // Mamy chmurkę — pobieramy nowszą wersję listy (albo wysyłamy naszą, jeśli nowsza)
+          setGistId(gistId);
           const remote = await pullItemsFromCloud();
-          if (remote) commit(remote, { cloud: false });
+          if (remote) {
+            commit(remote, { cloud: false });
+          } else {
+            await pushItemsToCloud(itemsRef.current);
+          }
           setSyncError('');
           setSyncStatus('saved');
           setCloudConnected(true);
-          return { ok: true, message: 'Połączono z istniejącą chmurką! 🎉' };
-        } catch (e) {
-          clearCloudCredentials();
-          setCloudConnected(false);
-          setSyncError(errorMessage(e));
-          setSyncStatus('error');
-          return { ok: false, message: 'Nie udało się połączyć: ' + errorMessage(e) };
+          const message = joinGistId
+            ? 'Połączono z podaną chmurką! 🎉'
+            : foundAutomatically
+              ? 'Znaleźliśmy Waszą chmurkę i połączyliśmy! 🎉'
+              : 'Połączono! 🎉';
+          return { ok: true, message };
         }
-      }
 
-      // Brak ID: tworzymy nową chmurkę z bieżącą listą (albo zapisujemy do istniejącej)
-      setSyncStatus('saving');
-      try {
+        // Nie ma nigdzie chmurki — tworzymy nową z bieżącą listą
+        setSyncStatus('saving');
         await pushItemsToCloud(itemsRef.current);
         setSyncError('');
         setSyncStatus('saved');
         setCloudConnected(true);
-        return {
-          ok: true,
-          message: joinGistId
-            ? 'Połączono! 🎉'
-            : 'Utworzyliśmy Waszą chmurkę! 🎉 Skopiuj jej ID na drugie urządzenie.',
-        };
+        return { ok: true, message: 'Utworzyliśmy Waszą chmurkę! 🎉 Od teraz wystarczy sam token.' };
       } catch (e) {
+        // Jeśli to była pierwsza próba połączenia, nie zostawiamy złych danych
+        if (!wasConnected) clearCloudCredentials();
+        setCloudConnected(isCloudConnected());
         setSyncError(errorMessage(e));
         setSyncStatus('error');
-        return { ok: false, message: 'Nie udało się zapisać: ' + errorMessage(e) };
+        return { ok: false, message: 'Nie udało się połączyć: ' + errorMessage(e) };
       }
     },
     [commit],
@@ -235,6 +299,7 @@ export function usePackingList() {
     changeQuantity,
     addItem,
     updateItem,
+    toggleAssignment,
     deleteItem,
     resetCategory,
     replaceAll,

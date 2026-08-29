@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
-import type { PackingItem } from './types';
-import { CATEGORIES } from './data/categories';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Category, PackingItem } from './types';
+import { ALL_CATEGORY_ID, CATEGORIES, CATEGORY_TABS } from './data/categories';
 import { usePackingList, type ItemFormValues } from './hooks/usePackingList';
+import { normalizeItems } from './lib/items';
 import { playSound } from './lib/sounds';
 import { Header } from './components/Header';
 import { CategoryTabs } from './components/CategoryTabs';
@@ -9,6 +10,7 @@ import { ProgressCard } from './components/ProgressCard';
 import { ItemCard } from './components/ItemCard';
 import { EmptyState } from './components/EmptyState';
 import { ItemModal } from './components/ItemModal';
+import { CatalogPickerModal } from './components/CatalogPickerModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas';
@@ -17,29 +19,65 @@ export default function App() {
   const [currentCategoryId, setCurrentCategoryId] = useState('lato');
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PackingItem | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [celebration, setCelebration] = useState<Category | null>(null);
   const confettiRef = useRef<ConfettiHandle>(null);
 
   const list = usePackingList();
 
-  const currentCategory = CATEGORIES.find((c) => c.id === currentCategoryId) ?? CATEGORIES[0];
-  const activeItems = list.items.filter((item) => item.categoryId === currentCategoryId);
-  const packedCount = activeItems.filter((item) => item.packed).length;
+  const isCatalog = currentCategoryId === ALL_CATEGORY_ID;
+  const currentCategory = CATEGORY_TABS.find((c) => c.id === currentCategoryId) ?? CATEGORIES[0];
+
+  const byCategory = (items: PackingItem[]) =>
+    isCatalog ? items : items.filter((i) => i.categoryIds.includes(currentCategoryId));
+
+  const activeItems = byCategory(list.items);
+  const packedCount = isCatalog
+    ? 0
+    : activeItems.filter((i) => i.packedIn.includes(currentCategoryId)).length;
+
+  /** kategorie w pełni spakowane → zielona odznaka na zakładce */
+  const doneIds = useMemo(
+    () =>
+      new Set(
+        CATEGORIES.filter((cat) => {
+          const inCat = list.items.filter((i) => i.categoryIds.includes(cat.id));
+          return inCat.length > 0 && inCat.every((i) => i.packedIn.includes(cat.id));
+        }).map((c) => c.id),
+      ),
+    [list.items],
+  );
+
+  // wielkie "SPAKOWANE!" samo się chowa po chwili
+  useEffect(() => {
+    if (!celebration) return;
+    const timer = setTimeout(() => setCelebration(null), 2800);
+    return () => clearTimeout(timer);
+  }, [celebration]);
 
   const handleToggle = (id: string) => {
-    const next = list.togglePacked(id);
+    if (isCatalog) return; // w katalogu nie pakujemy, tylko oglądamy
+    const next = list.togglePacked(id, currentCategoryId);
     const item = next.find((i) => i.id === id);
     if (!item) return;
 
-    playSound(item.packed ? 'check' : 'uncheck');
+    const isPacked = item.packedIn.includes(currentCategoryId);
+    playSound(isPacked ? 'check' : 'uncheck');
 
-    const inCategory = next.filter((i) => i.categoryId === currentCategoryId);
-    const allPacked = inCategory.length > 0 && inCategory.every((i) => i.packed);
-    if (item.packed && allPacked) {
+    const inCategory = next.filter((i) => i.categoryIds.includes(currentCategoryId));
+    const allPacked = inCategory.length > 0 && inCategory.every((i) => i.packedIn.includes(currentCategoryId));
+    if (isPacked && allPacked) {
       playSound('complete');
       confettiRef.current?.fire();
+      setCelebration(currentCategory);
     }
+  };
+
+  const handleChangeQuantity = (id: string, delta: number) => {
+    if (isCatalog) return;
+    list.changeQuantity(id, currentCategoryId, delta);
   };
 
   const handleReset = () => {
@@ -61,15 +99,26 @@ export default function App() {
     if (id) {
       list.updateItem(id, values);
     } else {
-      list.addItem(values);
+      // nowa rzecz trafia do katalogu; na zakładce kategorii od razu się do niej przypina
+      list.addItem(values, isCatalog ? undefined : currentCategoryId);
     }
     setItemModalOpen(false);
     setEditingItem(null);
-    setCurrentCategoryId(values.categoryId);
+  };
+
+  /** Kosz na karcie: w kategorii odpina rzecz, w katalogu usuwa ją na zawsze */
+  const handleRemove = (id: string) => {
+    if (isCatalog) {
+      if (window.confirm('Usunąć tę rzecz z katalogu? Zniknie ze wszystkich kategorii.')) {
+        list.deleteItem(id);
+      }
+    } else {
+      list.toggleAssignment(id, currentCategoryId);
+    }
   };
 
   const handleImport = (items: PackingItem[]) => {
-    list.replaceAll(items);
+    list.replaceAll(normalizeItems(items));
     playSound('check');
   };
 
@@ -82,6 +131,17 @@ export default function App() {
     <div className="min-h-screen text-slate-800 pb-12">
       <ConfettiCanvas ref={confettiRef} />
 
+      {/* wielka, zabawna nagroda za spakowanie całej kategorii */}
+      {celebration && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none no-print">
+          <div className="bounce-in bg-white rounded-3xl shadow-2xl border-4 border-emerald-300 px-10 py-8 text-center">
+            <div className="text-7xl mb-3 wiggle">{celebration.icon}</div>
+            <p className="text-3xl font-black text-emerald-600 tracking-wide">SPAKOWANE!</p>
+            <p className="text-sm font-semibold text-slate-500 mt-1">{celebration.name} — gotowe! 🎉</p>
+          </div>
+        </div>
+      )}
+
       <Header
         syncStatus={list.syncStatus}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -91,9 +151,19 @@ export default function App() {
       />
 
       <main className="max-w-6xl mx-auto px-4 mt-6">
-        <CategoryTabs categories={CATEGORIES} currentId={currentCategoryId} onSwitch={setCurrentCategoryId} />
+        <CategoryTabs
+          categories={CATEGORY_TABS}
+          currentId={currentCategoryId}
+          doneIds={doneIds}
+          onSwitch={setCurrentCategoryId}
+        />
 
-        <ProgressCard category={currentCategory} packedCount={packedCount} totalCount={activeItems.length} />
+        <ProgressCard
+          category={currentCategory}
+          packedCount={packedCount}
+          totalCount={activeItems.length}
+          catalogMode={isCatalog}
+        />
 
         {/* nagłówek widoczny tylko na wydruku */}
         <div className="hidden print:block mb-6 text-center border-b pb-4">
@@ -105,19 +175,33 @@ export default function App() {
         </div>
 
         {activeItems.length === 0 ? (
-          <EmptyState onAdd={openAddModal} />
+          <EmptyState
+            onAdd={openAddModal}
+            onPickFromCatalog={isCatalog ? undefined : () => setPickerOpen(true)}
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {activeItems.map((item) => (
               <ItemCard
                 key={item.id}
                 item={item}
+                categoryId={currentCategoryId}
+                catalogMode={isCatalog}
                 onToggle={handleToggle}
-                onChangeQuantity={list.changeQuantity}
+                onChangeQuantity={handleChangeQuantity}
                 onEdit={openEditModal}
-                onDelete={list.deleteItem}
+                onRemove={handleRemove}
               />
             ))}
+            {!isCatalog && (
+              <button
+                onClick={() => setPickerOpen(true)}
+                className="rounded-3xl border-2 border-dashed border-slate-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition flex flex-col items-center justify-center gap-2 p-6 min-h-[180px]"
+              >
+                <span className="text-4xl">📦</span>
+                <span className="font-bold text-sm">Dodaj z katalogu</span>
+              </button>
+            )}
           </div>
         )}
       </main>
@@ -129,6 +213,20 @@ export default function App() {
         onClose={() => setItemModalOpen(false)}
         onSubmit={handleSubmitItem}
       />
+
+      {!isCatalog && (
+        <CatalogPickerModal
+          open={pickerOpen}
+          category={currentCategory}
+          items={list.items}
+          onToggleAssignment={list.toggleAssignment}
+          onCreateNew={() => {
+            setPickerOpen(false);
+            openAddModal();
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
 
       <SettingsModal
         open={settingsOpen}

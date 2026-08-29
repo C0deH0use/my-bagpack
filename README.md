@@ -7,9 +7,11 @@ serwera.
 
 ## Co potrafi
 
-- 🗂️ Listy podzielone na kategorie (lato, zima, higiena, basen, spacer…)
-- 🖼️ Każda rzecz ma obrazek (rysunek SVG albo emoji) i **ilość** do zabrania
-- ✅ Odznaczanie spakowanych rzeczy, pasek postępu, konfetti i dźwięki
+- 📦 **Katalog dostępnych rzeczy** — jedna rzecz = jeden wpis (zakładka „Wszystkie rzeczy”)
+- 🗂️ Rzecz może być przypisana do **wielu kategorii** naraz (np. bluza → Lato + Zima + Spacer)
+- 🔢 **Ilość wybierana osobno dla każdej kategorii** (koszulka: Lato 4 szt., Zima 4 szt.)
+- ✅ Pakowanie w ramach kategorii, pasek postępu i dźwięki
+- 🎉 Po spakowaniu całej kategorii: deszcz emoji, wielkie „SPAKOWANE!” i zielona odznaka ✓ na zakładce
 - 🖨️ Drukowanie checklisty
 - 💾 **Pamięć**: wszystko zapisuje się samo (w przeglądarce + opcjonalnie w chmurze)
 - 🕰️ **Historia**: można podejrzeć i przywrócić każdą starszą wersję listy
@@ -35,13 +37,21 @@ npm run preview # podgląd zbudowanej wersji
 
 ### Konfiguracja chmury (raz, ~3 minuty)
 
-1. GitHub → **Settings → Developer settings → Personal access tokens →
-   Tokens (classic) → Generate new token (classic)**.
-2. Zaznacz **tylko** uprawnienie **`gist`** i wygeneruj token.
-3. Na stronie kliknij pastylkę statusu (np. „Tylko to urządzenie”), wklej token
-   i kliknij **Zapisz i połącz** — aplikacja sama utworzy chmurkę.
-4. Na drugim urządzeniu: wklej ten sam token **oraz ID chmurki** (do skopiowania
-   w tym samym oknie ustawień) → wspólna lista i historia gotowe.
+Wystarczy **sam token (PAT)** — aplikacja sama znajdzie chmurkę na koncie
+albo utworzy nową, jeśli jej nie ma.
+
+1. Utwórz **token (classic)**:
+   [github.com/settings/tokens/new](https://github.com/settings/tokens/new)
+   → nadaj nazwę (np. „Mój Plecaczek”) → zaznacz **tylko** uprawnienie
+   **`gist`** → *Generate token*.
+   (Tokeny fine-grained nie mają dziś dostępu do gistów, dlatego classic.)
+2. Na stronie kliknij pastylkę statusu (np. „Tylko to urządzenie”), wklej token
+   i kliknij **Połącz chmurkę** — gotowe.
+3. Na drugim urządzeniu (np. telefonie córki): wklej **ten sam token** —
+   aplikacja sama odnajdzie wspólną chmurkę.
+
+> Ręczne wpisywanie ID chmurki jest dostępne w sekcji „Zaawansowane” — potrzebne
+> tylko wtedy, gdy chmurka ma być współdzielona między **różnymi** kontami GitHub.
 
 ## Publikacja na GitHub Pages
 
@@ -61,5 +71,4 @@ src/
   lib/             # storage (localStorage), gist (chmura + historia), sounds
   hooks/           # usePackingList — stan listy i synchronizacja
   components/      # Header, CategoryTabs, ProgressCard, ItemCard, modale…
-standalone.html    # stara, jednoplikowa wersja strony (kopia, nieużywana)
 ```

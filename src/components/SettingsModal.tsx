@@ -111,25 +111,34 @@ export function SettingsModal({
         </div>
 
         <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 mb-4 text-xs text-indigo-800 leading-relaxed">
-          Lista zapisuje się sama w tej przeglądarce. Jeśli połączysz <b>chmurę GitHub (Gist)</b>, lista będzie taka
-          sama na telefonie i komputerze, a w zakładce <b>Historia</b> zobaczysz i przywrócisz każdą starszą wersję.
+          Lista zapisuje się sama w tej przeglądarce. Po wklejeniu <b>tokenu GitHub</b> aplikacja{' '}
+          <b>sama znajdzie albo utworzy</b> Waszą chmurkę — lista będzie taka sama na telefonie i komputerze, a w
+          zakładce <b>Historia</b> przywrócisz każdą starszą wersję. Na drugim urządzeniu wystarczy wkleić{' '}
+          <b>ten sam token</b>.
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-              Token GitHub (z uprawnieniem "gist")
-            </label>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Token GitHub (PAT)</label>
             <input
               type="password"
               value={token}
               onChange={(e) => setTokenInput(e.target.value)}
-              placeholder="ghp_..."
+              placeholder="ghp_... albo github_pat_..."
               autoComplete="off"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 text-sm font-mono"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Token zostaje tylko w tej przeglądarce – nie trafia do kodu strony.
+            <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+              Token zostaje tylko w tej przeglądarce – nie trafia do kodu strony. Utworzysz go tu:{' '}
+              <a
+                href="https://github.com/settings/tokens/new"
+                target="_blank"
+                rel="noreferrer"
+                className="text-indigo-600 underline"
+              >
+                github.com/settings/tokens/new
+              </a>{' '}
+              (token typu <b>classic</b>, zaznacz tylko uprawnienie <b>gist</b>).
             </p>
           </div>
 
@@ -150,26 +159,23 @@ export function SettingsModal({
                   Kopiuj
                 </button>
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Wpisz to ID na drugim urządzeniu (np. telefonie córki), aby mieć wspólną listę.
-              </p>
             </div>
           )}
 
           {!cloudConnected && (
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-                Masz już chmurkę? Wpisz jej ID
-              </label>
+            <details className="text-xs text-slate-500">
+              <summary className="cursor-pointer font-semibold hover:text-slate-700">
+                Zaawansowane: mam ID chmurki z innego konta
+              </summary>
               <input
                 type="text"
                 value={joinId}
                 onChange={(e) => setJoinId(e.target.value)}
-                placeholder="np. 8f3c2a..."
+                placeholder="ID chmurki (zwykle zostaw puste)"
                 autoComplete="off"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 text-sm font-mono"
+                className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 text-sm font-mono"
               />
-            </div>
+            </details>
           )}
 
           {message && (
@@ -184,7 +190,7 @@ export function SettingsModal({
               disabled={busy}
               className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm shadow-md transition"
             >
-              {busy ? '⏳ Łączenie…' : '💾 Zapisz i połącz'}
+              {busy ? '⏳ Łączenie…' : '☁️ Połącz chmurkę'}
             </button>
             <button
               onClick={handleDisconnect}

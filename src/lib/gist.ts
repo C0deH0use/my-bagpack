@@ -1,4 +1,5 @@
 import type { PackingItem } from '../types';
+import { normalizeItems } from './items';
 
 /**
  * Pamięć w chmurze = tajny GitHub Gist z plikiem `moj-plecaczek.json`.
@@ -36,6 +37,21 @@ interface GistResponse {
   id: string;
   files?: Record<string, GistFile>;
   history?: GistRevision[];
+}
+
+interface GistListItem {
+  id: string;
+  files?: Record<string, unknown>;
+}
+
+/**
+ * Szuka na koncie GitHub chmurki z naszym plikiem.
+ * Dzięki temu wystarczy sam token — bez przepisywania żadnych ID.
+ */
+export async function findExistingGistId(): Promise<string> {
+  const gists = await ghFetch<GistListItem[]>('/gists?per_page=100');
+  const found = gists.find((g) => g.files && GIST_FILENAME in g.files);
+  return found ? found.id : '';
 }
 
 export function getToken(): string {
@@ -135,7 +151,7 @@ export async function pullItemsFromCloud(): Promise<PackingItem[] | null> {
   const remoteAt = data.updatedAt ?? '';
   if (remoteAt && remoteAt > getLocalUpdatedAt()) {
     setLocalUpdatedAt(remoteAt);
-    return data.items;
+    return normalizeItems(data.items);
   }
   return null;
 }
@@ -155,5 +171,5 @@ export async function fetchRevisionItems(versionSha: string): Promise<{ items: P
   const data = JSON.parse(file.content) as Partial<CloudPayload>;
   if (!Array.isArray(data.items)) throw new Error('brak danych w tej wersji');
 
-  return { items: data.items, updatedAt: data.updatedAt ?? new Date().toISOString() };
+  return { items: normalizeItems(data.items), updatedAt: data.updatedAt ?? new Date().toISOString() };
 }
