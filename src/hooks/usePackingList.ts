@@ -21,6 +21,8 @@ export interface ItemFormValues {
   emoji: string;
   /** klucz rysunku SVG; pusty string = pokazuj emoji zamiast rysunku */
   svgKey: string;
+  /** kategorie wybrane w multi-selekcie (może być pusto = tylko katalog) */
+  categoryIds: string[];
 }
 
 const clampQty = (n: number) => Math.min(99, Math.max(1, n));
@@ -116,17 +118,17 @@ export function usePackingList() {
     [commit],
   );
 
-  /** Nowa rzecz w katalogu (grafika + nazwa). Można ją od razu przypiąć do kategorii. */
+  /** Nowa rzecz w katalogu; nowe kategorie startują z ilością 1 (zmienisz ją na karcie) */
   const addItem = useCallback(
-    (values: ItemFormValues, initialCategoryId?: string): PackingItem[] => {
-      const quantities: Record<string, number> = initialCategoryId ? { [initialCategoryId]: 1 } : {};
+    (values: ItemFormValues): PackingItem[] => {
+      const quantities = Object.fromEntries(values.categoryIds.map((c) => [c, 1]));
       const newItem: PackingItem = {
         id: Date.now().toString(),
         name: values.name,
         emoji: values.emoji,
         svgKey: values.svgKey,
         quantities,
-        categoryIds: Object.keys(quantities),
+        categoryIds: values.categoryIds,
         packedIn: [],
       };
       return commit([...itemsRef.current, newItem]);
@@ -134,13 +136,27 @@ export function usePackingList() {
     [commit],
   );
 
-  /** Edycja rzeczy = tylko nazwa i grafika (przypisania robi się z poziomu kategorii) */
+  /** Edycja rzeczy: nazwa, grafika i przypisania; ilości zachowane tam, gdzie kategoria zostaje */
   const updateItem = useCallback(
     (id: string, values: ItemFormValues): PackingItem[] =>
       commit(
-        itemsRef.current.map((item) =>
-          item.id === id ? { ...item, name: values.name, emoji: values.emoji, svgKey: values.svgKey } : item,
-        ),
+        itemsRef.current.map((item) => {
+          if (item.id !== id) return item;
+          const quantities: Record<string, number> = {};
+          for (const categoryId of values.categoryIds) {
+            quantities[categoryId] = item.quantities[categoryId] ?? 1;
+          }
+          return {
+            ...item,
+            name: values.name,
+            emoji: values.emoji,
+            svgKey: values.svgKey,
+            quantities,
+            categoryIds: values.categoryIds,
+            // jeśli odpięto kategorię, zapominamy o spakowaniu w niej
+            packedIn: item.packedIn.filter((c) => values.categoryIds.includes(c)),
+          };
+        }),
       ),
     [commit],
   );

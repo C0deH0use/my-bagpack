@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Category, PackingItem } from './types';
-import { ALL_CATEGORY_ID, CATEGORIES, CATEGORY_TABS } from './data/categories';
+import { ALL_CATEGORY, ALL_CATEGORY_ID, CATEGORIES } from './data/categories';
 import { usePackingList, type ItemFormValues } from './hooks/usePackingList';
 import { normalizeItems } from './lib/items';
 import { playSound } from './lib/sounds';
@@ -11,6 +11,7 @@ import { ItemCard } from './components/ItemCard';
 import { EmptyState } from './components/EmptyState';
 import { ItemModal } from './components/ItemModal';
 import { CatalogPickerModal } from './components/CatalogPickerModal';
+import { CatalogFilterBar } from './components/CatalogFilterBar';
 import { SettingsModal } from './components/SettingsModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas';
@@ -20,6 +21,8 @@ export default function App() {
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PackingItem | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [catalogFilter, setCatalogFilter] = useState<string | null>(null);
+  const [catalogSortAZ, setCatalogSortAZ] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [celebration, setCelebration] = useState<Category | null>(null);
@@ -28,12 +31,21 @@ export default function App() {
   const list = usePackingList();
 
   const isCatalog = currentCategoryId === ALL_CATEGORY_ID;
-  const currentCategory = CATEGORY_TABS.find((c) => c.id === currentCategoryId) ?? CATEGORIES[0];
+  const currentCategory =
+    CATEGORIES.find((c) => c.id === currentCategoryId) ??
+    (currentCategoryId === ALL_CATEGORY_ID ? ALL_CATEGORY : CATEGORIES[0]);
 
   const byCategory = (items: PackingItem[]) =>
     isCatalog ? items : items.filter((i) => i.categoryIds.includes(currentCategoryId));
 
-  const activeItems = byCategory(list.items);
+  // w bazie: filtr kategorii + opcjonalne sortowanie alfabetyczne
+  let activeItems = byCategory(list.items);
+  if (isCatalog && catalogFilter) {
+    activeItems = activeItems.filter((i) => i.categoryIds.includes(catalogFilter));
+  }
+  if (isCatalog && catalogSortAZ) {
+    activeItems = [...activeItems].sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+  }
   const packedCount = isCatalog
     ? 0
     : activeItems.filter((i) => i.packedIn.includes(currentCategoryId)).length;
@@ -99,8 +111,7 @@ export default function App() {
     if (id) {
       list.updateItem(id, values);
     } else {
-      // nowa rzecz trafia do katalogu; na zakładce kategorii od razu się do niej przypina
-      list.addItem(values, isCatalog ? undefined : currentCategoryId);
+      list.addItem(values);
     }
     setItemModalOpen(false);
     setEditingItem(null);
@@ -152,7 +163,7 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 mt-6">
         <CategoryTabs
-          categories={CATEGORY_TABS}
+          categories={CATEGORIES}
           currentId={currentCategoryId}
           doneIds={doneIds}
           onSwitch={setCurrentCategoryId}
@@ -173,6 +184,15 @@ export default function App() {
           </p>
           <p className="text-sm text-slate-400 mt-1">Sprawdź i zaznacz ptaszkiem lub naklejką przed wyjściem!</p>
         </div>
+
+        {isCatalog && (
+          <CatalogFilterBar
+            filterId={catalogFilter}
+            onFilterChange={setCatalogFilter}
+            sortAZ={catalogSortAZ}
+            onToggleSort={() => setCatalogSortAZ((s) => !s)}
+          />
+        )}
 
         {activeItems.length === 0 ? (
           <EmptyState

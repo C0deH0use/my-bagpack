@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { PackingItem } from '../types';
 import type { ItemFormValues } from '../hooks/usePackingList';
-import { ALL_CATEGORY_ID, CATEGORIES } from '../data/categories';
+import { ALL_CATEGORY_ID } from '../data/categories';
 import { EMOJI_LIST } from '../data/emojiList';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
+import { CategoryMultiSelect } from './CategoryMultiSelect';
 import { IconClose } from './icons';
 
 /** Wybrana ikonka: albo rysunek SVG, albo emoji */
@@ -18,13 +19,13 @@ interface ItemModalProps {
 }
 
 /**
- * Rzecz w katalogu to tylko grafika + nazwa.
- * Przypisanie do kategorii robimy z poziomu kategorii ("Dodaj z katalogu"),
- * a ilość — przyciskami +/− na karcie na głównym ekranie.
+ * Rzecz w katalogu to grafika + nazwa + (opcjonalne) kategorie z multi-selecta.
+ * Ilość ustawia się przyciskami +/− na karcie na głównym ekranie.
  */
 export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSubmit }: ItemModalProps) {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState<IconChoice>({ kind: 'emoji', value: EMOJI_LIST[0] });
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   // Za każdym otwarciem ustawiamy pola od nowa (edycja albo dodawanie)
   useEffect(() => {
@@ -35,16 +36,25 @@ export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSub
         ? { kind: 'svg', key: editingItem.svgKey }
         : { kind: 'emoji', value: editingItem?.emoji || EMOJI_LIST[0] },
     );
+    // nowa rzecz: bieżąca kategoria jest od razu zaznaczona; w katalogu — nic
+    setSelectedCategoryIds(
+      editingItem
+        ? [...editingItem.categoryIds]
+        : defaultCategoryId !== ALL_CATEGORY_ID
+          ? [defaultCategoryId]
+          : [],
+    );
     // defaultCategoryId celowo pomijamy — liczy się moment otwarcia
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
 
-  const targetCategory =
-    !editingItem && defaultCategoryId !== ALL_CATEGORY_ID
-      ? CATEGORIES.find((c) => c.id === defaultCategoryId)
-      : undefined;
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId],
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +65,7 @@ export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSub
         name: trimmed,
         emoji: icon.kind === 'emoji' ? icon.value : editingItem?.emoji || '📦',
         svgKey: icon.kind === 'svg' ? icon.key : '',
+        categoryIds: selectedCategoryIds,
       },
       editingItem?.id,
     );
@@ -128,15 +139,15 @@ export function ItemModal({ open, editingItem, defaultCategoryId, onClose, onSub
             </div>
           </div>
 
-          {targetCategory && (
-            <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-              Nowa rzecz trafi do katalogu i od razu do kategorii{' '}
-              <b>
-                {targetCategory.icon} {targetCategory.name}
-              </b>
-              . Ilość ustawisz przyciskami +/− na jej karcie.
+          <div>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+              Kategorie <span className="normal-case font-medium text-slate-400">(opcjonalnie, można kilka)</span>
+            </label>
+            <CategoryMultiSelect selectedIds={selectedCategoryIds} onToggle={toggleCategory} />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Ilość ustawisz przyciskami +/− na karcie rzeczy.
             </p>
-          )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <button

@@ -1,6 +1,5 @@
 import type { PackingItem } from '../types';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
-import { CATEGORIES } from '../data/categories';
 import { IconCheck, IconEdit, IconTrash } from './icons';
 
 interface ItemCardProps {
@@ -37,10 +36,12 @@ export function ItemCard({ item, categoryId, catalogMode, onToggle, onChangeQuan
         isPacked ? 'card-packed border-emerald-400 shadow-sm' : 'border-slate-200/90 shadow-sm'
       }`}
     >
-      <div className="flex justify-between items-start mb-2 no-print">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
-          {catalogMode ? 'W katalogu' : 'Do zabrania'}
-        </span>
+      <div className={`flex items-start mb-2 no-print ${catalogMode ? 'justify-end' : 'justify-between'}`}>
+        {!catalogMode && (
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
+            Do zabrania
+          </span>
+        )}
         <div className="flex gap-1">
           <button
             onClick={() => onEdit(item)}
@@ -70,21 +71,8 @@ export function ItemCard({ item, categoryId, catalogMode, onToggle, onChangeQuan
             {item.name}
           </h3>
 
-          {catalogMode ? (
-            /* katalog: przypisane kategorie wraz z ilościami */
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {CATEGORIES.filter((c) => c.id in item.quantities).map((c) => (
-                <span
-                  key={c.id}
-                  title={`${c.name}: ${item.quantities[c.id]} szt.`}
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-bold ${c.color}`}
-                >
-                  <span>{c.icon}</span>
-                  <span>×{item.quantities[c.id]}</span>
-                </span>
-              ))}
-            </div>
-          ) : (
+          {/* baza: tylko grafika i nazwa — bez przypisań i ilości */}
+          {!catalogMode && (
             /* kategoria: duża ilość wybrana dla tej kategorii */
             <div className="mt-1 flex items-end gap-1.5">
               <span className="text-xs text-slate-500 font-semibold mb-1">Ilość:</span>

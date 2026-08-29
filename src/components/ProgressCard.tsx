@@ -21,7 +21,7 @@ export function ProgressCard({ category, packedCount, totalCount, catalogMode = 
             <h2 className="text-xl font-bold text-slate-800">{category.name}</h2>
             <p className="text-sm text-slate-500">
               {catalogMode
-                ? 'Tu mieszkają wszystkie rzeczy. Wybierz kategorię powyżej, aby pakować! 🎒'
+                ? 'To baza wszystkich przedmiotów. Wybierz kategorię powyżej, aby pakować! 🎒'
                 : allDone
                   ? ' Super! Wszystko jest spakowane! 🎉'
                   : `Zostało jeszcze ${totalCount - packedCount} rzeczy do spakowania.`}
@@ -33,7 +33,7 @@ export function ProgressCard({ category, packedCount, totalCount, catalogMode = 
             {catalogMode ? (
               <>
                 <span className="text-2xl font-black text-indigo-600">{totalCount}</span>
-                <span className="text-xs text-slate-400 block font-semibold">rzeczy w katalogu</span>
+                <span className="text-xs text-slate-400 block font-semibold">przedmiotów w bazie</span>
               </>
             ) : (
               <>

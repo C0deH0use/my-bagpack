@@ -10,15 +10,15 @@ export const CATEGORIES: Category[] = [
   { id: 'wycieczka', name: 'Szkoła / Wycieczka', icon: '🎒', color: 'bg-purple-100 text-purple-800 border-purple-300' },
 ];
 
-/** Specjalna zakładka pokazująca cały katalog rzeczy */
+/**
+ * "Wszystkie przedmioty" — to NIE jest kategoria, tylko baza/przestrzeń
+ * ze wszystkimi stworzonymi rzeczami. Wyświetlana osobno, obok kategorii.
+ */
 export const ALL_CATEGORY_ID = 'all';
 
 export const ALL_CATEGORY: Category = {
   id: ALL_CATEGORY_ID,
-  name: 'Wszystkie rzeczy',
-  icon: '📦',
-  color: 'bg-slate-200 text-slate-800 border-slate-400',
+  name: 'Wszystkie przedmioty',
+  icon: '🗄️',
+  color: 'bg-slate-700 text-white border-slate-700',
 };
-
-/** Zakładki na górze strony = kategorie + cały katalog na końcu */
-export const CATEGORY_TABS: Category[] = [...CATEGORIES, ALL_CATEGORY];
