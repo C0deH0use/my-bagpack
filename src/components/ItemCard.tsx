@@ -1,4 +1,4 @@
-import type { PackingItem } from '../types';
+import type { PackingItem, Person } from '../types';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
 import { IconCheck, IconEdit, IconTrash } from './icons';
 
@@ -8,6 +8,9 @@ interface ItemCardProps {
   categoryId: string;
   /** tryb katalogu ("Wszystkie rzeczy"): bez odhaczania, pokazujemy przypisania */
   catalogMode: boolean;
+  /** właściciel rzeczy — chip widoczny, gdy na ekranie mieszają się rzeczy różnych osób */
+  owner: Person;
+  showOwner: boolean;
   onToggle: (id: string) => void;
   onChangeQuantity: (id: string, delta: number) => void;
   onEdit: (item: PackingItem) => void;
@@ -15,14 +18,31 @@ interface ItemCardProps {
   onRemove: (id: string) => void;
 }
 
-export function ItemCard({ item, categoryId, catalogMode, onToggle, onChangeQuantity, onEdit, onRemove }: ItemCardProps) {
+export function ItemCard({
+  item,
+  categoryId,
+  catalogMode,
+  owner,
+  showOwner,
+  onToggle,
+  onChangeQuantity,
+  onEdit,
+  onRemove,
+}: ItemCardProps) {
   const isPacked = !catalogMode && item.packedIn.includes(categoryId);
   const quantity = item.quantities[categoryId] ?? 1;
   const svg = item.svgKey ? SVG_DRAWINGS[item.svgKey] : undefined;
+  /** tymczasowe zabarwienie rysunku kolorem właściciela (nie dotyczy obrazków AI) */
+  const imageStyle = !item.aiImage && owner.svgFilter ? { filter: owner.svgFilter } : undefined;
 
   const image = (
-    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-2 flex items-center justify-center shrink-0 shadow-inner">
-      {svg ? (
+    <div
+      className="bg-slate-50 border border-slate-100 rounded-2xl p-2 flex items-center justify-center shrink-0 shadow-inner"
+      style={imageStyle}
+    >
+      {item.aiImage ? (
+        <img src={item.aiImage} alt={item.name} draggable={false} className="w-20 h-20 object-contain p-1 rounded-xl" />
+      ) : svg ? (
         <div className="w-20 h-20 flex items-center justify-center p-1" dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
         <div className="text-5xl select-none flex items-center justify-center w-20 h-20">{item.emoji || '📦'}</div>
@@ -36,8 +56,15 @@ export function ItemCard({ item, categoryId, catalogMode, onToggle, onChangeQuan
         isPacked ? 'card-packed border-emerald-400 shadow-sm' : 'border-slate-200/90 shadow-sm'
       }`}
     >
-      <div className={`flex items-start mb-2 no-print ${catalogMode ? 'justify-end' : 'justify-between'}`}>
-        {!catalogMode && (
+      <div className={`flex items-start mb-2 no-print ${catalogMode && !showOwner ? 'justify-end' : 'justify-between'}`}>
+        {catalogMode && !showOwner ? null : showOwner ? (
+          <span
+            className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${owner.color}`}
+            title={`Rzecz ${owner.name}`}
+          >
+            {owner.icon} {owner.name}
+          </span>
+        ) : (
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
             Do zabrania
           </span>

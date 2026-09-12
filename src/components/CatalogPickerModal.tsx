@@ -1,4 +1,5 @@
-import type { Category, PackingItem } from '../types';
+import type { Category, PackingItem, Person } from '../types';
+import { personById } from '../data/persons';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
 import { IconCheck, IconClose, IconPlus } from './icons';
 
@@ -6,6 +7,8 @@ interface CatalogPickerModalProps {
   open: boolean;
   /** kategoria, którą właśnie komponujemy */
   category: Category;
+  /** kontekst osoby (null = "Wszyscy") — czyje rzeczy podajemy do tej kategorii */
+  person: Person | null;
   items: PackingItem[];
   onToggleAssignment: (itemId: string, categoryId: string) => void;
   onCreateNew: () => void;
@@ -15,10 +18,12 @@ interface CatalogPickerModalProps {
 /**
  * Komponowanie kategorii: zaznaczamy rzeczy z katalogu,
  * które mają się w niej znaleźć. Zmiany zapisują się od razu.
+ * W kontekście osoby widać tylko JEJ rzeczy.
  */
 export function CatalogPickerModal({
   open,
   category,
+  person,
   items,
   onToggleAssignment,
   onCreateNew,
@@ -26,7 +31,8 @@ export function CatalogPickerModal({
 }: CatalogPickerModalProps) {
   if (!open) return null;
 
-  const assignedCount = items.filter((i) => i.categoryIds.includes(category.id)).length;
+  const candidates = person ? items.filter((i) => i.personId === person.id) : items;
+  const assignedCount = candidates.filter((i) => i.categoryIds.includes(category.id)).length;
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
@@ -34,6 +40,11 @@ export function CatalogPickerModal({
         <div className="flex justify-between items-center mb-1">
           <h3 className="text-xl font-bold text-slate-800">
             {category.icon} {category.name}
+            {person && (
+              <span className={`ml-2 align-middle text-xs font-bold px-2 py-0.5 rounded-md border ${person.color}`}>
+                {person.icon} {person.name}
+              </span>
+            )}
           </h3>
           <button
             onClick={onClose}
@@ -48,9 +59,10 @@ export function CatalogPickerModal({
         </p>
 
         <div className="overflow-y-auto -mx-1 px-1 space-y-1.5 flex-1">
-          {items.map((item) => {
+          {candidates.map((item) => {
             const assigned = item.categoryIds.includes(category.id);
             const svg = item.svgKey ? SVG_DRAWINGS[item.svgKey] : undefined;
+            const owner = personById(item.personId);
             return (
               <button
                 key={item.id}
@@ -61,8 +73,13 @@ export function CatalogPickerModal({
                     : 'bg-white border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <span className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl p-1 flex items-center justify-center shrink-0">
-                  {svg ? (
+                <span
+                  className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl p-1 flex items-center justify-center shrink-0"
+                  style={!item.aiImage && owner.svgFilter ? { filter: owner.svgFilter } : undefined}
+                >
+                  {item.aiImage ? (
+                    <img src={item.aiImage} alt="" className="w-full h-full object-contain" />
+                  ) : svg ? (
                     <span className="w-full h-full block" dangerouslySetInnerHTML={{ __html: svg }} />
                   ) : (
                     <span className="text-2xl">{item.emoji || '📦'}</span>
@@ -70,6 +87,11 @@ export function CatalogPickerModal({
                 </span>
                 <span className={`flex-1 text-sm font-bold ${assigned ? 'text-emerald-900' : 'text-slate-700'}`}>
                   {item.name}
+                  {!person && (
+                    <span className="ml-1.5 text-xs font-semibold text-slate-400" title={`Rzecz ${owner.name}`}>
+                      {owner.icon}
+                    </span>
+                  )}
                 </span>
                 <span
                   className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition ${

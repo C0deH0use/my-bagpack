@@ -1,14 +1,16 @@
-import type { Category } from '../types';
+import type { Category, Person } from '../types';
 
 interface ProgressCardProps {
   category: Category;
+  /** kontekst osoby (null = "Wszyscy") — czyje rzeczy właśnie pakujemy */
+  person?: Person | null;
   packedCount: number;
   totalCount: number;
   /** tryb katalogu: bez pakowania, pokazujemy tylko liczbę rzeczy */
   catalogMode?: boolean;
 }
 
-export function ProgressCard({ category, packedCount, totalCount, catalogMode = false }: ProgressCardProps) {
+export function ProgressCard({ category, person, packedCount, totalCount, catalogMode = false }: ProgressCardProps) {
   const percentage = totalCount > 0 ? Math.round((packedCount / totalCount) * 100) : 0;
   const allDone = percentage === 100 && totalCount > 0;
 
@@ -18,7 +20,14 @@ export function ProgressCard({ category, packedCount, totalCount, catalogMode = 
         <div className="flex items-center gap-3">
           <span className="text-3xl p-2 bg-amber-100 rounded-2xl">{category.icon}</span>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">{category.name}</h2>
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 flex-wrap">
+              {category.name}
+              {person && (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${person.color}`}>
+                  {person.icon} {person.name}
+                </span>
+              )}
+            </h2>
             <p className="text-sm text-slate-500">
               {catalogMode
                 ? 'To baza wszystkich przedmiotów. Wybierz kategorię powyżej, aby pakować! 🎒'

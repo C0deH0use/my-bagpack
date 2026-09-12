@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectResult, PackingItem, SyncStatus } from '../types';
 import { DEFAULT_ITEMS } from '../data/defaultItems';
+import { ALL_PERSONS_ID } from '../data/persons';
 import { loadStoredItems, storeItems } from '../lib/storage';
 import {
   clearCloudCredentials,
@@ -21,8 +22,12 @@ export interface ItemFormValues {
   emoji: string;
   /** klucz rysunku SVG; pusty string = pokazuj emoji zamiast rysunku */
   svgKey: string;
+  /** właściciel rzeczy (osoba pakująca) */
+  personId: string;
   /** kategorie wybrane w multi-selekcie (może być pusto = tylko katalog) */
   categoryIds: string[];
+  /** obrazek AI (data URL); pusty string = bez obrazka */
+  aiImage?: string;
 }
 
 const clampQty = (n: number) => Math.min(99, Math.max(1, n));
@@ -124,19 +129,21 @@ export function usePackingList() {
       const quantities = Object.fromEntries(values.categoryIds.map((c) => [c, 1]));
       const newItem: PackingItem = {
         id: Date.now().toString(),
+        personId: values.personId,
         name: values.name,
         emoji: values.emoji,
         svgKey: values.svgKey,
         quantities,
         categoryIds: values.categoryIds,
         packedIn: [],
+        ...(values.aiImage ? { aiImage: values.aiImage } : {}),
       };
       return commit([...itemsRef.current, newItem]);
     },
     [commit],
   );
 
-  /** Edycja rzeczy: nazwa, grafika i przypisania; ilości zachowane tam, gdzie kategoria zostaje */
+  /** Edycja rzeczy: właściciel, nazwa, grafika i przypisania; ilości zachowane tam, gdzie kategoria zostaje */
   const updateItem = useCallback(
     (id: string, values: ItemFormValues): PackingItem[] =>
       commit(
@@ -146,8 +153,9 @@ export function usePackingList() {
           for (const categoryId of values.categoryIds) {
             quantities[categoryId] = item.quantities[categoryId] ?? 1;
           }
-          return {
+          const updated: PackingItem = {
             ...item,
+            personId: values.personId,
             name: values.name,
             emoji: values.emoji,
             svgKey: values.svgKey,
@@ -156,6 +164,10 @@ export function usePackingList() {
             // jeśli odpięto kategorię, zapominamy o spakowaniu w niej
             packedIn: item.packedIn.filter((c) => values.categoryIds.includes(c)),
           };
+          // obrazek AI: nowy nadpisuje, pusty czyści
+          if (values.aiImage) updated.aiImage = values.aiImage;
+          else delete updated.aiImage;
+          return updated;
         }),
       ),
     [commit],
@@ -187,14 +199,20 @@ export function usePackingList() {
     [commit],
   );
 
-  /** Odznacza spakowanie w danej kategorii ('all' = wszędzie) */
+  /**
+   * Odznacza spakowanie w danej kategorii ('all' = wszędzie).
+   * Z podanym kontekstem osoby odznacza tylko JEJ rzeczy w tej kategorii.
+   */
   const resetCategory = useCallback(
-    (categoryId: string): PackingItem[] =>
+    (categoryId: string, personId: string = ALL_PERSONS_ID): PackingItem[] =>
       commit(
-        itemsRef.current.map((item) => ({
-          ...item,
-          packedIn: categoryId === 'all' ? [] : item.packedIn.filter((c) => c !== categoryId),
-        })),
+        itemsRef.current.map((item) => {
+          if (personId !== ALL_PERSONS_ID && item.personId !== personId) return item;
+          return {
+            ...item,
+            packedIn: categoryId === 'all' ? [] : item.packedIn.filter((c) => c !== categoryId),
+          };
+        }),
       ),
     [commit],
   );

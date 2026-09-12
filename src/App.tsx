@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Category, PackingItem } from './types';
+import type { Category, PackingItem, Person } from './types';
 import { ALL_CATEGORY, ALL_CATEGORY_ID, CATEGORIES } from './data/categories';
+import { ALL_PERSONS_ID, PERSONS, personById } from './data/persons';
 import { usePackingList, type ItemFormValues } from './hooks/usePackingList';
 import { normalizeItems } from './lib/items';
 import { playSound } from './lib/sounds';
 import { Header } from './components/Header';
 import { CategoryTabs } from './components/CategoryTabs';
+import { PersonTabs } from './components/PersonTabs';
 import { ProgressCard } from './components/ProgressCard';
 import { ItemCard } from './components/ItemCard';
 import { EmptyState } from './components/EmptyState';
@@ -17,7 +19,9 @@ import { HistoryModal } from './components/HistoryModal';
 import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas';
 
 export default function App() {
-  const [currentCategoryId, setCurrentCategoryId] = useState('lato');
+  const [currentCategoryId, setCurrentCategoryId] = useState('ogolne');
+  /** kontekst osoby: "kto pakuje" — filtruje rzeczy w kategorii i katalogu */
+  const [currentPersonId, setCurrentPersonId] = useState(ALL_PERSONS_ID);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PackingItem | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -25,7 +29,7 @@ export default function App() {
   const [catalogSortAZ, setCatalogSortAZ] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [celebration, setCelebration] = useState<Category | null>(null);
+  const [celebration, setCelebration] = useState<{ category: Category; person: Person | null } | null>(null);
   const confettiRef = useRef<ConfettiHandle>(null);
 
   const list = usePackingList();
@@ -34,12 +38,17 @@ export default function App() {
   const currentCategory =
     CATEGORIES.find((c) => c.id === currentCategoryId) ??
     (currentCategoryId === ALL_CATEGORY_ID ? ALL_CATEGORY : CATEGORIES[0]);
+  /** null = "Wszyscy" (bez filtra osoby) */
+  const currentPerson = currentPersonId === ALL_PERSONS_ID ? null : personById(currentPersonId);
 
-  const byCategory = (items: PackingItem[]) =>
-    isCatalog ? items : items.filter((i) => i.categoryIds.includes(currentCategoryId));
+  const byContext = (items: PackingItem[]) => {
+    let result = isCatalog ? items : items.filter((i) => i.categoryIds.includes(currentCategoryId));
+    if (currentPerson) result = result.filter((i) => i.personId === currentPerson.id);
+    return result;
+  };
 
   // w bazie: filtr kategorii + opcjonalne sortowanie alfabetyczne
-  let activeItems = byCategory(list.items);
+  let activeItems = byContext(list.items);
   if (isCatalog && catalogFilter) {
     activeItems = activeItems.filter((i) => i.categoryIds.includes(catalogFilter));
   }
@@ -50,7 +59,7 @@ export default function App() {
     ? 0
     : activeItems.filter((i) => i.packedIn.includes(currentCategoryId)).length;
 
-  /** kategorie w pełni spakowane → zielona odznaka na zakładce */
+  /** kategorie w pełni spakowane (wszystkie rzeczy, wszystkich osób) → zielona odznaka na zakładce */
   const doneIds = useMemo(
     () =>
       new Set(
@@ -61,6 +70,21 @@ export default function App() {
       ),
     [list.items],
   );
+
+  /** osoby, które spakowały CAŁĄ swoją część bieżącej kategorii → odznaka na chipie osoby */
+  const personDoneIds = useMemo(() => {
+    if (isCatalog) return new Set<string>();
+    const done = new Set<string>();
+    for (const person of PERSONS) {
+      const inContext = list.items.filter(
+        (i) => i.personId === person.id && i.categoryIds.includes(currentCategoryId),
+      );
+      if (inContext.length > 0 && inContext.every((i) => i.packedIn.includes(currentCategoryId))) {
+        done.add(person.id);
+      }
+    }
+    return done;
+  }, [list.items, currentCategoryId, isCatalog]);
 
   // wielkie "SPAKOWANE!" samo się chowa po chwili
   useEffect(() => {
@@ -78,12 +102,14 @@ export default function App() {
     const isPacked = item.packedIn.includes(currentCategoryId);
     playSound(isPacked ? 'check' : 'uncheck');
 
-    const inCategory = next.filter((i) => i.categoryIds.includes(currentCategoryId));
-    const allPacked = inCategory.length > 0 && inCategory.every((i) => i.packedIn.includes(currentCategoryId));
+    const relevant = currentPerson
+      ? next.filter((i) => i.personId === currentPerson.id && i.categoryIds.includes(currentCategoryId))
+      : next.filter((i) => i.categoryIds.includes(currentCategoryId));
+    const allPacked = relevant.length > 0 && relevant.every((i) => i.packedIn.includes(currentCategoryId));
     if (isPacked && allPacked) {
       playSound('complete');
       confettiRef.current?.fire();
-      setCelebration(currentCategory);
+      setCelebration({ category: currentCategory, person: currentPerson });
     }
   };
 
@@ -93,7 +119,8 @@ export default function App() {
   };
 
   const handleReset = () => {
-    list.resetCategory(currentCategoryId);
+    // w kontekście osoby odświeżamy tylko jej checklistę w tej kategorii
+    list.resetCategory(currentCategoryId, currentPersonId);
     playSound('uncheck');
   };
 
@@ -142,13 +169,19 @@ export default function App() {
     <div className="min-h-screen text-slate-800 pb-12">
       <ConfettiCanvas ref={confettiRef} />
 
-      {/* wielka, zabawna nagroda za spakowanie całej kategorii */}
+      {/* wielka, zabawna nagroda za spakowanie całej checklisty w kontekście */}
       {celebration && (
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none no-print">
           <div className="bounce-in bg-white rounded-3xl shadow-2xl border-4 border-emerald-300 px-10 py-8 text-center">
-            <div className="text-7xl mb-3 wiggle">{celebration.icon}</div>
+            <div className="text-7xl mb-3 wiggle">
+              {celebration.person ? celebration.person.icon : celebration.category.icon}
+            </div>
             <p className="text-3xl font-black text-emerald-600 tracking-wide">SPAKOWANE!</p>
-            <p className="text-sm font-semibold text-slate-500 mt-1">{celebration.name} — gotowe! 🎉</p>
+            <p className="text-sm font-semibold text-slate-500 mt-1">
+              {celebration.person
+                ? `${celebration.person.name} — ${celebration.category.name} — gotowe! 🎉`
+                : `${celebration.category.name} — gotowe! 🎉`}
+            </p>
           </div>
         </div>
       )}
@@ -169,8 +202,17 @@ export default function App() {
           onSwitch={setCurrentCategoryId}
         />
 
+        {/* kontekst osoby działa też w katalogu — tam również pokazuje czyje to rzeczy */}
+        <PersonTabs
+          persons={PERSONS}
+          currentId={currentPersonId}
+          doneIds={personDoneIds}
+          onSwitch={setCurrentPersonId}
+        />
+
         <ProgressCard
           category={currentCategory}
+          person={currentPerson}
           packedCount={packedCount}
           totalCount={activeItems.length}
           catalogMode={isCatalog}
@@ -181,6 +223,7 @@ export default function App() {
           <h1 className="text-3xl font-bold text-slate-900 mb-1">Moja Lista do Spakowania 🎒</h1>
           <p className="text-lg text-slate-600 font-semibold">
             {currentCategory.icon} {currentCategory.name}
+            {currentPerson && ` — ${currentPerson.icon} ${currentPerson.name}`}
           </p>
           <p className="text-sm text-slate-400 mt-1">Sprawdź i zaznacz ptaszkiem lub naklejką przed wyjściem!</p>
         </div>
@@ -207,6 +250,8 @@ export default function App() {
                 item={item}
                 categoryId={currentCategoryId}
                 catalogMode={isCatalog}
+                owner={personById(item.personId)}
+                showOwner={!currentPerson}
                 onToggle={handleToggle}
                 onChangeQuantity={handleChangeQuantity}
                 onEdit={openEditModal}
@@ -230,6 +275,7 @@ export default function App() {
         open={itemModalOpen}
         editingItem={editingItem}
         defaultCategoryId={currentCategoryId}
+        defaultPersonId={currentPerson ? currentPerson.id : 'wspolne'}
         onClose={() => setItemModalOpen(false)}
         onSubmit={handleSubmitItem}
       />
@@ -238,6 +284,7 @@ export default function App() {
         <CatalogPickerModal
           open={pickerOpen}
           category={currentCategory}
+          person={currentPerson}
           items={list.items}
           onToggleAssignment={list.toggleAssignment}
           onCreateNew={() => {

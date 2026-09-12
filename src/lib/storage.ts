@@ -1,7 +1,7 @@
 import type { PackingItem } from '../types';
 import { normalizeItems } from './items';
 
-const STORAGE_KEY = 'kids_packing_list_data_v2';
+const STORAGE_KEY = 'kids_packing_list_data_v3';
 
 export function loadStoredItems(fallback: PackingItem[]): PackingItem[] {
   try {

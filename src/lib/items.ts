@@ -1,8 +1,10 @@
 import type { PackingItem } from '../types';
+import { PERSONS } from '../data/persons';
 
 /** Stare formaty danych (z localStorage / starszych wersji chmurki) */
 interface LegacyItem {
   id?: unknown;
+  personId?: unknown;
   categoryId?: unknown;
   categoryIds?: unknown;
   quantities?: unknown;
@@ -12,16 +14,18 @@ interface LegacyItem {
   svgKey?: unknown;
   emoji?: unknown;
   quantity?: unknown;
+  aiImage?: unknown;
 }
 
 const clampQty = (n: number) => Math.min(99, Math.max(1, Math.round(n)));
 
 /**
  * Ujednolica dane do aktualnego formatu:
+ * - brak `personId` (starsze wersje) → rzecz wspólna ("wspolne"),
  * - stary `categoryId` (string) → kategorie,
  * - stara `quantity` + `packed` → ilości i spakowanie PRZYPISANE do kategorii,
- * - scala duplikaty o tej samej nazwie w jedną rzecz
- *   (kiedyś ta sama bluza była osobno w "Lato" i "Zima").
+ * - scala duplikaty o tej samej nazwie I właścicielu w jedną rzecz
+ *   (ta sama nazwa u różnych osób to osobne rzeczy).
  */
 export function normalizeItems(raw: unknown): PackingItem[] {
   if (!Array.isArray(raw)) return [];
@@ -36,16 +40,25 @@ export function normalizeItems(raw: unknown): PackingItem[] {
 
     items.push({
       id: typeof legacy.id === 'string' ? legacy.id : `${Date.now()}-${index}`,
+      personId: readPersonId(legacy),
       categoryIds: Object.keys(quantities),
       quantities,
       packedIn: readPackedIn(legacy, categoryIds),
       name: legacy.name,
       svgKey: typeof legacy.svgKey === 'string' ? legacy.svgKey : '',
       emoji: typeof legacy.emoji === 'string' ? legacy.emoji : '📦',
+      ...(typeof legacy.aiImage === 'string' && legacy.aiImage ? { aiImage: legacy.aiImage } : {}),
     });
   });
 
   return mergeSameNameItems(items);
+}
+
+function readPersonId(legacy: LegacyItem): string {
+  if (typeof legacy.personId === 'string' && PERSONS.some((p) => p.id === legacy.personId)) {
+    return legacy.personId;
+  }
+  return 'wspolne';
 }
 
 function readCategoryIds(legacy: LegacyItem): string[] {
@@ -85,12 +98,12 @@ function readPackedIn(legacy: LegacyItem, categoryIds: string[]): string[] {
   return [];
 }
 
-/** Scala wpisy o identycznej nazwie: łączy kategorie, ilości (max) i spakowanie. */
+/** Scala wpisy o identycznej nazwie i właścicielu: łączy kategorie, ilości (max) i spakowanie. */
 function mergeSameNameItems(items: PackingItem[]): PackingItem[] {
   const byName = new Map<string, PackingItem>();
 
   for (const item of items) {
-    const key = item.name.trim().toLowerCase();
+    const key = `${item.personId}\u0000${item.name.trim().toLowerCase()}`;
     const existing = byName.get(key);
     if (!existing) {
       byName.set(key, item);
@@ -104,6 +117,7 @@ function mergeSameNameItems(items: PackingItem[]): PackingItem[] {
     existing.packedIn = [...new Set([...existing.packedIn, ...item.packedIn])];
     if (!existing.svgKey && item.svgKey) existing.svgKey = item.svgKey;
     if (existing.emoji === '📦' && item.emoji !== '📦') existing.emoji = item.emoji;
+    if (!existing.aiImage && item.aiImage) existing.aiImage = item.aiImage;
   }
 
   return [...byName.values()];

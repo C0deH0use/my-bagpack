@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ConnectResult, PackingItem } from '../types';
 import { getGistId, getToken } from '../lib/gist';
+import { AI_FEATURE_ENABLED, isAiConfigured, readAiConfig, saveAiConfig } from '../lib/ai/config';
+import { hasFreshToken, minutesLeft, signInWithGoogle, signOutFromGoogle } from '../lib/ai/googleOAuth';
 import { IconClose } from './icons';
 
 interface SettingsModalProps {
@@ -34,6 +36,14 @@ export function SettingsModal({
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Obrazki AI: konfiguracja Google (Client ID + Project ID — publiczne, nie sekrety)
+  const [aiClientId, setAiClientId] = useState('');
+  const [aiProjectId, setAiProjectId] = useState('');
+  const [aiSignedIn, setAiSignedIn] = useState(false);
+  const [aiMinutes, setAiMinutes] = useState(0);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiMessage, setAiMessage] = useState<Message | null>(null);
+
   useEffect(() => {
     if (!open) return;
     setTokenInput(getToken());
@@ -41,6 +51,13 @@ export function SettingsModal({
     setJoinId('');
     setMessage(null);
     setBusy(false);
+    const aiConfig = readAiConfig();
+    setAiClientId(aiConfig.clientId);
+    setAiProjectId(aiConfig.projectId);
+    setAiSignedIn(hasFreshToken());
+    setAiMinutes(minutesLeft());
+    setAiMessage(null);
+    setAiBusy(false);
   }, [open]);
 
   if (!open) return null;
@@ -58,6 +75,39 @@ export function SettingsModal({
     onDisconnect();
     setGistIdState('');
     setMessage({ text: 'Odłączono. Lista dalej zapisuje się w tej przeglądarce.', isError: false });
+  };
+
+  /* ---------- Obrazki AI ---------- */
+
+  const handleSaveAi = () => {
+    saveAiConfig({ clientId: aiClientId.trim(), projectId: aiProjectId.trim() });
+    setAiMessage({ text: 'Zapisano ✅ — teraz kliknij „Zaloguj przez Google”.', isError: false });
+  };
+
+  const handleAiSignIn = async () => {
+    if (aiBusy) return;
+    setAiBusy(true);
+    setAiMessage(null);
+    try {
+      await signInWithGoogle();
+      setAiSignedIn(true);
+      setAiMinutes(minutesLeft());
+      setAiMessage({ text: 'Zalogowano ✅ — token trzymamy tylko w pamięci przeglądarki.', isError: false });
+    } catch (e) {
+      setAiMessage({
+        text: 'Logowanie nie udało się: ' + (e instanceof Error ? e.message : String(e)),
+        isError: true,
+      });
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const handleAiSignOut = () => {
+    signOutFromGoogle();
+    setAiSignedIn(false);
+    setAiMinutes(0);
+    setAiMessage({ text: 'Wylogowano i cofnięto zgodę — token usunięty z pamięci.', isError: false });
   };
 
   const handleCopyGistId = () => {
@@ -199,6 +249,86 @@ export function SettingsModal({
               Odłącz chmurę
             </button>
           </div>
+
+          {/* Obrazki AI — na razie wyłączone: flaga AI_FEATURE_ENABLED w src/lib/ai/config.ts */}
+          {AI_FEATURE_ENABLED && (
+          <div className="border-t border-slate-100 pt-4">
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-2">✨ Obrazki AI (Google Gemini)</label>
+            <div className="bg-fuchsia-50 border border-fuchsia-100 rounded-2xl p-3 mb-3 text-xs text-fuchsia-800 leading-relaxed">
+              Przy dodawaniu rzeczy Gemini może sam narysować obrazek. Logujesz się{' '}
+              <b>przez Google (OAuth)</b> — <b>bez żadnego klucza API</b>. Token dostępu trzymamy{' '}
+              <b>tylko w pamięci</b> strony (wygasa po ~1 h) i nic nie zapisujemy. Client ID i ID
+              projektu to wartości publiczne, nie sekrety.
+            </div>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={aiClientId}
+                onChange={(e) => setAiClientId(e.target.value)}
+                placeholder="Client ID OAuth (…apps.googleusercontent.com)"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 text-sm font-mono"
+              />
+              <input
+                type="text"
+                value={aiProjectId}
+                onChange={(e) => setAiProjectId(e.target.value)}
+                placeholder="ID projektu Google Cloud (opcjonalnie)"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 text-sm font-mono"
+              />
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+              Skąd wziąć te dwie wartości — instrukcja krok po kroku w README („Obrazki AI”). W
+              skrócie:{' '}
+              <a
+                href="https://console.cloud.google.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-indigo-600 underline"
+              >
+                console.cloud.google.com
+              </a>{' '}
+              → włącz <b>Generative Language API</b> → utwórz <b>OAuth client ID</b> (typ Web
+              application, origin tej strony) → wklej powyżej.
+            </p>
+            {aiMessage && (
+              <p className={`text-sm font-semibold mt-2 ${aiMessage.isError ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {aiMessage.text}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <button
+                onClick={handleSaveAi}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition"
+              >
+                💾 Zapisz konfigurację
+              </button>
+              <button
+                onClick={() => void handleAiSignIn()}
+                disabled={aiBusy || (!aiClientId.trim() && !isAiConfigured())}
+                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm shadow-md transition"
+              >
+                {aiBusy ? '⏳ Loguję…' : '🔐 Zaloguj przez Google'}
+              </button>
+              {aiSignedIn && (
+                <>
+                  <span className="text-xs font-bold text-emerald-600">
+                    ✅ Zalogowano (token jeszcze ~{aiMinutes} min)
+                  </span>
+                  <button
+                    onClick={handleAiSignOut}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition"
+                  >
+                    Wyloguj i cofnij zgodę
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          )}
 
           <div className="border-t border-slate-100 pt-4">
             <label className="block text-xs font-bold uppercase text-slate-500 mb-2">Kopia zapasowa na dysku</label>

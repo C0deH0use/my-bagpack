@@ -15,6 +15,9 @@ const TOKEN_KEY = 'mpc_gh_token';
 const GIST_ID_KEY = 'mpc_gist_id';
 const UPDATED_KEY = 'mpc_updated_at';
 
+/** Wersja formatu danych; zmieniamy przy niekompatybilnych zmianach modelu. */
+const SCHEMA_VERSION = 2;
+
 const API = 'https://api.github.com';
 
 export interface GistRevision {
@@ -25,6 +28,7 @@ export interface GistRevision {
 
 interface CloudPayload {
   app: string;
+  schema?: number;
   updatedAt: string;
   items: PackingItem[];
 }
@@ -108,7 +112,7 @@ async function ghFetch<T>(path: string, init?: RequestInit): Promise<T> {
 function buildPayload(items: PackingItem[]): string {
   const updatedAt = new Date().toISOString();
   setLocalUpdatedAt(updatedAt);
-  const payload: CloudPayload = { app: 'Mój Plecaczek', updatedAt, items };
+  const payload: CloudPayload = { app: 'Mój Plecaczek', schema: SCHEMA_VERSION, updatedAt, items };
   return JSON.stringify(payload, null, 2);
 }
 
@@ -137,8 +141,10 @@ export async function pushItemsToCloud(items: PackingItem[]): Promise<void> {
 }
 
 /**
- * Pobiera listę z chmury, ale tylko jeśli jest NOWSZA niż lokalna.
- * Zwraca null, gdy lokalna wersja jest aktualniejsza lub chmurka jest pusta.
+ * Pobiera listę z chmury, ale tylko jeśli jest NOWSZA niż lokalna
+ * i zapisana w aktualnym formacie danych (schema).
+ * Zwraca null, gdy lokalna wersja jest aktualniejsza, chmurka jest pusta
+ * albo ma stary format — wtedy najbliższy zapis nadpisze chmurkę.
  */
 export async function pullItemsFromCloud(): Promise<PackingItem[] | null> {
   const gist = await ghFetch<GistResponse>(`/gists/${getGistId()}`);
@@ -147,6 +153,7 @@ export async function pullItemsFromCloud(): Promise<PackingItem[] | null> {
 
   const data = JSON.parse(file.content) as Partial<CloudPayload>;
   if (!Array.isArray(data.items)) return null;
+  if (data.schema !== SCHEMA_VERSION) return null;
 
   const remoteAt = data.updatedAt ?? '';
   if (remoteAt && remoteAt > getLocalUpdatedAt()) {
