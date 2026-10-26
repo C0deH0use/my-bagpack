@@ -8,6 +8,7 @@ interface ItemCardProps {
   categoryId: string;
   /** tryb katalogu ("Wszystkie rzeczy"): bez odhaczania, pokazujemy przypisania */
   catalogMode: boolean;
+  catalogCategoryFilter?: string | null;
   /** właściciel rzeczy — chip widoczny, gdy na ekranie mieszają się rzeczy różnych osób */
   owner: Person;
   showOwner: boolean;
@@ -22,6 +23,7 @@ export function ItemCard({
   item,
   categoryId,
   catalogMode,
+  catalogCategoryFilter,
   owner,
   showOwner,
   onToggle,
@@ -29,7 +31,34 @@ export function ItemCard({
   onEdit,
   onRemove,
 }: ItemCardProps) {
-  const isPacked = !catalogMode && item.packedIn.includes(categoryId);
+  let isPacked = false;
+  let catalogStatusText = '';
+  let catalogStatusType: 'packed' | 'partial' | 'unpacked' = 'unpacked';
+
+  if (!catalogMode) {
+    isPacked = item.packedIn.includes(categoryId);
+  } else {
+    if (catalogCategoryFilter) {
+      isPacked = item.packedIn.includes(catalogCategoryFilter);
+      catalogStatusText = isPacked ? 'Spakowane' : 'Do spakowania';
+      catalogStatusType = isPacked ? 'packed' : 'unpacked';
+    } else {
+      const totalCats = item.categoryIds.length;
+      const packedCats = item.packedIn.filter((c) => item.categoryIds.includes(c)).length;
+      isPacked = totalCats > 0 && packedCats === totalCats;
+      if (isPacked) {
+        catalogStatusText = 'Spakowane';
+        catalogStatusType = 'packed';
+      } else if (packedCats > 0) {
+        catalogStatusText = `Spakowane (${packedCats}/${totalCats})`;
+        catalogStatusType = 'partial';
+      } else {
+        catalogStatusText = 'Do spakowania';
+        catalogStatusType = 'unpacked';
+      }
+    }
+  }
+
   const quantity = item.quantities[categoryId] ?? 1;
   const svg = item.svgKey ? SVG_DRAWINGS[item.svgKey] : undefined;
   /** tymczasowe zabarwienie rysunku kolorem właściciela (nie dotyczy obrazków AI) */
@@ -56,19 +85,39 @@ export function ItemCard({
         isPacked ? 'card-packed border-emerald-400 shadow-sm' : 'border-slate-200/90 shadow-sm'
       }`}
     >
-      <div className={`flex items-start mb-2 no-print ${catalogMode && !showOwner ? 'justify-end' : 'justify-between'}`}>
-        {catalogMode && !showOwner ? null : showOwner ? (
-          <span
-            className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${owner.color}`}
-            title={`Rzecz ${owner.name}`}
-          >
-            {owner.icon} {owner.name}
-          </span>
-        ) : (
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
-            Do zabrania
-          </span>
-        )}
+      <div className="flex items-start mb-2 justify-between no-print gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {showOwner && (
+            <span
+              className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${owner.color}`}
+              title={`Rzecz ${owner.name}`}
+            >
+              {owner.icon} {owner.name}
+            </span>
+          )}
+
+          {catalogMode ? (
+            <span
+              className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                catalogStatusType === 'packed'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : catalogStatusType === 'partial'
+                  ? 'bg-amber-50 text-amber-700 border-amber-300'
+                  : 'bg-slate-100 text-slate-500 border-slate-200'
+              }`}
+            >
+              {catalogStatusText}
+            </span>
+          ) : isPacked ? (
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md">
+              Spakowane
+            </span>
+          ) : (
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+              Do zabrania
+            </span>
+          )}
+        </div>
         <div className="flex gap-1">
           <button
             onClick={() => onEdit(item)}

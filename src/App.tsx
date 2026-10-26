@@ -13,7 +13,7 @@ import { ItemCard } from './components/ItemCard';
 import { EmptyState } from './components/EmptyState';
 import { ItemModal } from './components/ItemModal';
 import { CatalogPickerModal } from './components/CatalogPickerModal';
-import { CatalogFilterBar } from './components/CatalogFilterBar';
+import { ViewFilterBar, type SortOption, type StatusFilter } from './components/ViewFilterBar';
 import { SettingsModal } from './components/SettingsModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas';
@@ -26,7 +26,9 @@ export default function App() {
   const [editingItem, setEditingItem] = useState<PackingItem | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [catalogFilter, setCatalogFilter] = useState<string | null>(null);
-  const [catalogSortAZ, setCatalogSortAZ] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [searchQuery, setSearchQuery] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [celebration, setCelebration] = useState<{ category: Category; person: Person | null } | null>(null);
@@ -47,17 +49,91 @@ export default function App() {
     return result;
   };
 
-  // w bazie: filtr kategorii + opcjonalne sortowanie alfabetyczne
-  let activeItems = byContext(list.items);
-  if (isCatalog && catalogFilter) {
-    activeItems = activeItems.filter((i) => i.categoryIds.includes(catalogFilter));
-  }
-  if (isCatalog && catalogSortAZ) {
-    activeItems = [...activeItems].sort((a, b) => a.name.localeCompare(b.name, 'pl'));
-  }
-  const packedCount = isCatalog
+  // Rzeczy w bieżącym kontekście (kategoria + osoba)
+  const contextItems = byContext(list.items);
+
+  // Funkcja sprawdzająca czy rzecz jest spakowana w bieżącym widoku
+  const isItemPacked = (item: PackingItem) => {
+    if (!isCatalog) {
+      return item.packedIn.includes(currentCategoryId);
+    }
+    if (catalogFilter) {
+      return item.packedIn.includes(catalogFilter);
+    }
+    return item.categoryIds.length > 0 && item.categoryIds.every((c) => item.packedIn.includes(c));
+  };
+
+  // Całkowita liczba spakowanych rzeczy w kontekście (do karty postępu)
+  const totalContextPacked = isCatalog
     ? 0
-    : activeItems.filter((i) => i.packedIn.includes(currentCategoryId)).length;
+    : contextItems.filter((i) => i.packedIn.includes(currentCategoryId)).length;
+
+  // Baza rzeczy widocznych w bieżącym widoku (przed filtrem statusu i wyszukiwania)
+  const baseViewItems = isCatalog && catalogFilter
+    ? contextItems.filter((i) => i.categoryIds.includes(catalogFilter))
+    : contextItems;
+
+  // Liczniki do paska filtrów
+  const viewTotalCount = baseViewItems.length;
+  const viewPackedCount = baseViewItems.filter(isItemPacked).length;
+  const viewUnpackedCount = viewTotalCount - viewPackedCount;
+
+  // Filtrowanie i sortowanie listy rzeczy
+  let displayedItems = baseViewItems;
+
+  if (statusFilter === 'unpacked') {
+    displayedItems = displayedItems.filter((i) => !isItemPacked(i));
+  } else if (statusFilter === 'packed') {
+    displayedItems = displayedItems.filter((i) => isItemPacked(i));
+  }
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    displayedItems = displayedItems.filter((i) => i.name.toLowerCase().includes(q));
+  }
+
+  if (sortBy !== 'default') {
+    displayedItems = [...displayedItems].sort((a, b) => {
+      if (sortBy === 'name-asc') {
+        return a.name.localeCompare(b.name, 'pl');
+      }
+      if (sortBy === 'name-desc') {
+        return b.name.localeCompare(a.name, 'pl');
+      }
+      if (sortBy === 'status-unpacked') {
+        const aPacked = isItemPacked(a);
+        const bPacked = isItemPacked(b);
+        if (aPacked !== bPacked) {
+          return aPacked ? 1 : -1;
+        }
+        return a.name.localeCompare(b.name, 'pl');
+      }
+      if (sortBy === 'status-packed') {
+        const aPacked = isItemPacked(a);
+        const bPacked = isItemPacked(b);
+        if (aPacked !== bPacked) {
+          return aPacked ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name, 'pl');
+      }
+      return 0;
+    });
+  }
+
+  const hasActiveFilters =
+    statusFilter !== 'all' ||
+    sortBy !== 'default' ||
+    searchQuery.trim() !== '' ||
+    (isCatalog && catalogFilter !== null);
+
+  const handleResetFilters = () => {
+    setStatusFilter('all');
+    setSortBy('default');
+    setSearchQuery('');
+    if (isCatalog) {
+      setCatalogFilter(null);
+    }
+  };
 
   /** kategorie w pełni spakowane (wszystkie rzeczy, wszystkich osób) → zielona odznaka na zakładce */
   const doneIds = useMemo(
@@ -213,8 +289,8 @@ export default function App() {
         <ProgressCard
           category={currentCategory}
           person={currentPerson}
-          packedCount={packedCount}
-          totalCount={activeItems.length}
+          packedCount={totalContextPacked}
+          totalCount={contextItems.length}
           catalogMode={isCatalog}
         />
 
@@ -228,28 +304,63 @@ export default function App() {
           <p className="text-sm text-slate-400 mt-1">Sprawdź i zaznacz ptaszkiem lub naklejką przed wyjściem!</p>
         </div>
 
-        {isCatalog && (
-          <CatalogFilterBar
-            filterId={catalogFilter}
-            onFilterChange={setCatalogFilter}
-            sortAZ={catalogSortAZ}
-            onToggleSort={() => setCatalogSortAZ((s) => !s)}
-          />
-        )}
+        <ViewFilterBar
+          totalCount={viewTotalCount}
+          unpackedCount={viewUnpackedCount}
+          packedCount={viewPackedCount}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          isCatalog={isCatalog}
+          catalogCategoryFilter={catalogFilter}
+          onCatalogCategoryChange={setCatalogFilter}
+          hasActiveFilters={hasActiveFilters}
+          onResetFilters={handleResetFilters}
+        />
 
-        {activeItems.length === 0 ? (
+        {baseViewItems.length === 0 ? (
           <EmptyState
             onAdd={openAddModal}
             onPickFromCatalog={isCatalog ? undefined : () => setPickerOpen(true)}
           />
+        ) : displayedItems.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-300 p-6 no-print">
+            <div className="text-4xl mb-3">
+              {statusFilter === 'unpacked' ? '🎉' : statusFilter === 'packed' ? '📦' : '🔍'}
+            </div>
+            <h3 className="text-lg font-bold text-slate-700 mb-1">
+              {statusFilter === 'unpacked'
+                ? 'Wszystko spakowane!'
+                : statusFilter === 'packed'
+                ? 'Brak spakowanych przedmiotów'
+                : 'Brak pasujących przedmiotów'}
+            </h3>
+            <p className="text-sm text-slate-500 mb-4 max-w-md mx-auto">
+              {statusFilter === 'unpacked'
+                ? 'Wszystkie rzeczy w tej kategorii zostały już spakowane. Możesz zmienić filtr, aby zobaczyć całą listę.'
+                : statusFilter === 'packed'
+                ? 'Żadna rzecz w tej kategorii nie została jeszcze oznaczona jako spakowana.'
+                : 'Żadna rzecz nie spełnia kryteriów wyszukiwania lub wybranych filtrów.'}
+            </p>
+            <button
+              onClick={handleResetFilters}
+              className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl text-sm hover:bg-indigo-700 transition shadow-sm"
+            >
+              Pokaż wszystkie przedmioty
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeItems.map((item) => (
+            {displayedItems.map((item) => (
               <ItemCard
                 key={item.id}
                 item={item}
                 categoryId={currentCategoryId}
                 catalogMode={isCatalog}
+                catalogCategoryFilter={catalogFilter}
                 owner={personById(item.personId)}
                 showOwner={!currentPerson}
                 onToggle={handleToggle}
