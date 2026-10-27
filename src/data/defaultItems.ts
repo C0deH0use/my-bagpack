@@ -218,6 +218,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('176', 'ania', 'Szczoteczka elektryczna', 'szczoteczka_elektryczna', '⚡', {} /* tylko katalog */),
   item('177', 'ania', 'Szczoteczka dziecięca', 'szczoteczka_dziecieca', '🪥', {} /* tylko katalog */),
   item('145', 'ania', 'Szczotka do włosów', 'szczotka_wlosow', '🪮', { higiena: 1 }),
+  item('210', 'ania', 'Szlafrok - tygrysek', 'szlafrok_tygrysek', '🐯', { basen: 1, turystyczne: 1, zagranica: 1 }),
   item('146', 'ania', 'Śpiwór', 'spiwor_mumia', '🛌', { turystyczne: 1, zagranica: 1 }, '/items/spiwor_mumia.jpg'),
   item('199', 'ania', 'Śpiwór w worku kompresyjnym', 'spiwor_kompresyjny', '🎒', {} /* tylko katalog */, '/items/spiwor_kompresyjny.jpg'),
   item('147', 'ania', 'Ulubiona maskotka', 'maskotka', '🧸', { zima: 1, lato: 1, wycieczka: 1 }),
