@@ -157,6 +157,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('101', 'ania', 'Buty zimowe', 'buty_zimowe', '🥾', { zima: 1 }),
   item('102', 'ania', 'Ciepłe spodnie', 'cieple_spodnie', '👖', { zima: 2 }),
   item('103', 'ania', 'Czapka z daszkiem', 'czapka_daszek', '🧢', { lato: 1, spacer: 1 }),
+  item('202', 'ania', 'Czapka z daszkiem (letnia)', 'czapka_daszek_letnia', '🧢', {} /* tylko katalog */),
   item('165', 'ania', 'Czepek', 'czepek', '🏊‍♀️', { basen: 1 }, '/items/czepek_blekitny.jpg'),
   item('166', 'ania', 'Czepek różowy', 'czepek_rozowy', '🏊‍♀️', { basen: 1 }, '/items/czepek_rozowy.jpg'),
   item('167', 'ania', 'Czepek sportowy', 'czepek_sportowy', '🏊‍♀️', { basen: 1 }, '/items/czepek_sportowy.jpg'),
