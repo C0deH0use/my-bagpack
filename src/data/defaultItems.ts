@@ -32,7 +32,8 @@ function item(
 export const DEFAULT_ITEMS: PackingItem[] = [
   // ——— 🧳 Wspólne ———
   item('1', 'wspolne', 'AirTag do bagażu rejestrowanego', '', '📍', { zagranica: 1 }),
-  item('2', 'wspolne', 'Bandaże', '', '⛑️', { leki: 1 }),
+  item('2', 'wspolne', 'Bandaże', 'bandaze', '🩹', { leki: 1 }, '/items/bandaze.jpg'),
+  item('203', 'wspolne', 'Bandaż elastyczny z zapinkami', 'bandaz_elastyczny', '🩹', {} /* tylko katalog */, '/items/bandaz_elastyczny.jpg'),
   item('3', 'wspolne', 'Gąbka i płyn do mycia naczyń', '', '🧽', { ogolne: 1, turystyczne: 1, zagranica: 1, gospodarcze: 1 }),
   item('4', 'wspolne', 'Gry karciane', '', '🃏', { ogolne: 1, turystyczne: 1, zagranica: 1 }),
   item('5', 'wspolne', 'Grzebień', 'grzebien', '🪮', { ogolne: 1 }),
