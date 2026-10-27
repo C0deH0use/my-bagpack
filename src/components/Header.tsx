@@ -51,10 +51,11 @@ export function Header({ syncStatus, onOpenSettings, onOpenHistory, onReset, onA
           </button>
           <button
             onClick={onReset}
+            title="Odznacz wszystkie spakowane rzeczy w bieżącej kategorii"
             className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition flex items-center gap-1.5"
           >
             <IconReset className="w-4 h-4 text-slate-500" />
-            <span className="hidden sm:inline">Odśwież checklistę</span>
+            <span className="hidden sm:inline">Odznacz spakowane</span>
           </button>
           <button
             onClick={onAdd}

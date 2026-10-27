@@ -1,4 +1,5 @@
 import type { Category, Person } from '../types';
+import { IconReset } from './icons';
 
 interface ProgressCardProps {
   category: Category;
@@ -8,9 +9,18 @@ interface ProgressCardProps {
   totalCount: number;
   /** tryb katalogu: bez pakowania, pokazujemy tylko liczbę rzeczy */
   catalogMode?: boolean;
+  /** akcja odznaczenia wszystkich spakowanych w tej kategorii */
+  onResetCategory?: () => void;
 }
 
-export function ProgressCard({ category, person, packedCount, totalCount, catalogMode = false }: ProgressCardProps) {
+export function ProgressCard({
+  category,
+  person,
+  packedCount,
+  totalCount,
+  catalogMode = false,
+  onResetCategory,
+}: ProgressCardProps) {
   const percentage = totalCount > 0 ? Math.round((packedCount / totalCount) * 100) : 0;
   const allDone = percentage === 100 && totalCount > 0;
 
@@ -46,13 +56,28 @@ export function ProgressCard({ category, person, packedCount, totalCount, catalo
               </>
             ) : (
               <>
-                <span className="text-2xl font-black text-indigo-600">
-                  {packedCount} / {totalCount}
-                </span>
+                <div className="flex items-baseline justify-end gap-1.5">
+                  <span className="text-2xl font-black text-indigo-600">
+                    {packedCount} / {totalCount}
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold">({percentage}%)</span>
+                </div>
                 <span className="text-xs text-slate-400 block font-semibold">spakowanych rzeczy</span>
               </>
             )}
           </div>
+
+          {!catalogMode && packedCount > 0 && onResetCategory && (
+            <button
+              onClick={onResetCategory}
+              title={`Odznacz wszystkie (${packedCount}) spakowane rzeczy w kategorii ${category.name}`}
+              className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold rounded-2xl transition flex items-center gap-1.5 shadow-sm hover:shadow active:scale-95 shrink-0"
+            >
+              <IconReset className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden sm:inline">Odznacz spakowane</span>
+              <span className="sm:hidden">Odznacz</span>
+            </button>
+          )}
         </div>
       </div>
 

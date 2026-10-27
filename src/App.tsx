@@ -195,9 +195,19 @@ export default function App() {
   };
 
   const handleReset = () => {
-    // w kontekście osoby odświeżamy tylko jej checklistę w tej kategorii
-    list.resetCategory(currentCategoryId, currentPersonId);
-    playSound('uncheck');
+    if (isCatalog) return;
+    if (totalContextPacked === 0) return;
+    const catName = currentCategory.name;
+    const personName = currentPerson ? ` (${currentPerson.name})` : '';
+    if (
+      window.confirm(
+        `Czy na pewno chcesz odznaczyć wszystkie (${totalContextPacked}) spakowane rzeczy w kategorii "${catName}"${personName}?`,
+      )
+    ) {
+      // w kontekście osoby odświeżamy tylko jej checklistę w tej kategorii
+      list.resetCategory(currentCategoryId, currentPersonId);
+      playSound('uncheck');
+    }
   };
 
   const openAddModal = () => {
@@ -292,6 +302,7 @@ export default function App() {
           packedCount={totalContextPacked}
           totalCount={contextItems.length}
           catalogMode={isCatalog}
+          onResetCategory={handleReset}
         />
 
         {/* nagłówek widoczny tylko na wydruku */}
@@ -319,6 +330,7 @@ export default function App() {
           onCatalogCategoryChange={setCatalogFilter}
           hasActiveFilters={hasActiveFilters}
           onResetFilters={handleResetFilters}
+          onResetCategory={handleReset}
         />
 
         {baseViewItems.length === 0 ? (

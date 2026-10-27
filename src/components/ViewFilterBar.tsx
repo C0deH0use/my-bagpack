@@ -1,4 +1,5 @@
 import { CATEGORIES } from '../data/categories';
+import { IconReset } from './icons';
 
 export type StatusFilter = 'all' | 'unpacked' | 'packed';
 
@@ -39,6 +40,8 @@ interface ViewFilterBarProps {
   hasActiveFilters: boolean;
   /** Resetowanie filtrów i sortowania do stanu domyślnego */
   onResetFilters: () => void;
+  /** Opcjonalne odznaczenie wszystkich spakowanych w bieżącej kategorii */
+  onResetCategory?: () => void;
 }
 
 export function ViewFilterBar({
@@ -56,6 +59,7 @@ export function ViewFilterBar({
   onCatalogCategoryChange,
   hasActiveFilters,
   onResetFilters,
+  onResetCategory,
 }: ViewFilterBarProps) {
   const handleToggleNameSort = () => {
     if (sortBy === 'name-asc') {
@@ -175,6 +179,18 @@ export function ViewFilterBar({
               {packedCount}
             </span>
           </button>
+
+          {/* Szybki przycisk odznaczenia spakowanych, gdy filtr 'spakowane' jest aktywny */}
+          {!isCatalog && packedCount > 0 && onResetCategory && statusFilter === 'packed' && (
+            <button
+              onClick={onResetCategory}
+              title="Odznacz wszystkie spakowane rzeczy w tej kategorii"
+              className="px-2.5 py-1.5 rounded-xl text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 ml-1"
+            >
+              <IconReset className="w-3.5 h-3.5 text-amber-600" />
+              <span>Odznacz wszystkie</span>
+            </button>
+          )}
         </div>
 
         {/* Grupa 2: Wyszukiwarka + Sortowanie */}
