@@ -38,13 +38,27 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'spiwor_koldra', name: 'Śpiwór turystyczny (kołdra)', category: 'Biwak & Turystyka', url: '/items/spiwor_koldra.jpg' },
   { id: 'spiwor_kompresyjny', name: 'Śpiwór w worku kompresyjnym', category: 'Biwak & Turystyka', url: '/items/spiwor_kompresyjny.jpg' },
 
-  // ——— 🧥 Kurtki & Peleryny ———
+  // ——— 🧢 Czapki & Nakrycia głowy ———
+  { id: 'czapka_daszek', name: 'Czapka z daszkiem (dynamiczny styl 3/4)', category: 'Czapki & Nakrycia głowy', url: '/items/czapka_daszek.jpg' },
+  { id: 'szalik_komin', name: 'Szalik wełniany & Komin polarowy', category: 'Czapki & Nakrycia głowy', url: '/items/szalik_komin.jpg' },
+
+  // ——— ❄️ Odzież termiczna ———
+  { id: 'odziez_termiczna_marek', name: 'Odzież termiczna męska (Marek)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_marek.jpg' },
+  { id: 'odziez_termiczna_aga', name: 'Odzież termiczna damska (Aga)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_aga.jpg' },
+  { id: 'odziez_termiczna_ania', name: 'Odzież termiczna dziewczęca (Ania)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_ania.jpg' },
+
+  // ——— 🧥 Kurtki & Peleryny & Bielizna ———
   { id: 'softshell_koralowy', name: 'Kurtka Softshell (koralowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_koralowy.jpg' },
   { id: 'softshell_turkusowy', name: 'Kurtka Softshell (turkusowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_turkusowy.jpg' },
   { id: 'softshell_grafitowy', name: 'Kurtka Softshell męska (grafitowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_grafitowy.jpg' },
   { id: 'peleryna_zolta', name: 'Płaszcz przeciwdeszczowy (żółty)', category: 'Odzież & Przeciwdeszczowe', url: '/items/peleryna_zolta.jpg' },
   { id: 'peleryna_oliwkowa', name: 'Peleryna poncho (oliwkowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/peleryna_oliwkowa.jpg' },
   { id: 'peleryna_przezroczysta', name: 'Peleryna przeciwdeszczowa przezroczysta', category: 'Odzież & Przeciwdeszczowe', url: '/items/peleryna_przezroczysta.jpg' },
+  { id: 'biustonosz', name: 'Biustonosz sportowy / komfortowy (Aga)', category: 'Odzież & Przeciwdeszczowe', url: '/items/biustonosz.jpg' },
+
+  // ——— 🏖️ Ręczniki & Kąpiel ———
+  { id: 'recznik', name: 'Ręcznik kąpielowy frotte / mikrofibra', category: 'Ręczniki & Kąpiel', url: '/items/recznik.jpg' },
+  { id: 'recznik_kaptur', name: 'Ręcznik z kapturem (ponczo dziecięce)', category: 'Ręczniki & Kąpiel', url: '/items/recznik_kaptur.jpg' },
 
   // ——— 🏊‍♀️ Basen & Woda ———
   { id: 'czepek_blekitny', name: 'Czepek basenowy błękitny', category: 'Basen & Pływanie', url: '/items/czepek_blekitny.jpg' },
@@ -63,7 +77,11 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'kabel_usbc', name: 'Kabel USB-C w oplocie', category: 'Elektronika & Kable', url: '/items/kabel_usbc.jpg' },
   { id: 'ladowarka_apple_watch', name: 'Ładowarka Apple Watch', category: 'Elektronika & Kable', url: '/items/ladowarka_apple_watch.jpg' },
 
-  // ——— 👶 Niemowlę & Pieluchy ———
+  // ——— 👶 Niemowlę & Dziecko ———
+  { id: 'body_tymek', name: 'Body niemowlęce z napkami (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/body_tymek.jpg' },
+  { id: 'kombinezon_batman', name: 'Kombinezon jesienny Batman (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_batman.jpg' },
+  { id: 'kombinezon_mis', name: 'Kombinezon z uszkami misia (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_mis.jpg' },
+  { id: 'kombinezon_pikowany', name: 'Kombinezon pikowany jesienny (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_pikowany.jpg' },
   { id: 'pieluchy', name: 'Pieluchy jednorazowe', category: 'Niemowlę & Dziecko', url: '/items/pieluchy.jpg' },
   { id: 'pielucha_tetra', name: 'Pielucha tetrowa z agrafką', category: 'Niemowlę & Dziecko', url: '/items/pielucha_tetra.jpg' },
 ];
