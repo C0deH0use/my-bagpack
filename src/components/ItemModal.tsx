@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { PackingItem } from '../types';
 import type { ItemFormValues } from '../hooks/usePackingList';
 import { ALL_CATEGORY_ID } from '../data/categories';
 import { PERSONS } from '../data/persons';
 import { EMOJI_LIST } from '../data/emojiList';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
+import { GALLERY_IMAGES } from '../data/galleryImages';
 import { CategoryMultiSelect } from './CategoryMultiSelect';
-import { IconClose } from './icons';
+import { IconCheck, IconClose } from './icons';
 import { AI_FEATURE_ENABLED, isAiConfigured } from '../lib/ai/config';
 
-/** Wybrana grafika: rysunek SVG, emoji albo obrazek AI */
+/** Wybrana grafika: rysunek SVG, emoji albo ilustracja 2D Cartoon */
 type IconChoice =
   | { kind: 'svg'; key: string }
   | { kind: 'emoji'; value: string }
@@ -32,6 +33,9 @@ interface ItemModalProps {
 export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonId, onClose, onSubmit }: ItemModalProps) {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState<IconChoice>({ kind: 'emoji', value: EMOJI_LIST[0] });
+  const [activeGraphicTab, setActiveGraphicTab] = useState<'ai' | 'svg' | 'emoji'>('ai');
+  const [gallerySearch, setGallerySearch] = useState('');
+  const [galleryCategory, setGalleryCategory] = useState<string>('all');
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [personId, setPersonId] = useState(defaultPersonId);
   const [aiBusy, setAiBusy] = useState(false);
@@ -42,13 +46,15 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
   useEffect(() => {
     if (!open) return;
     setName(editingItem?.name ?? '');
-    setIcon(
-      editingItem?.aiImage
-        ? { kind: 'ai', url: editingItem.aiImage }
-        : editingItem?.svgKey
-          ? { kind: 'svg', key: editingItem.svgKey }
-          : { kind: 'emoji', value: editingItem?.emoji || EMOJI_LIST[0] },
-    );
+    const initialIcon: IconChoice = editingItem?.aiImage
+      ? { kind: 'ai', url: editingItem.aiImage }
+      : editingItem?.svgKey
+        ? { kind: 'svg', key: editingItem.svgKey }
+        : { kind: 'emoji', value: editingItem?.emoji || EMOJI_LIST[0] };
+    setIcon(initialIcon);
+    setActiveGraphicTab(initialIcon.kind === 'ai' ? 'ai' : initialIcon.kind === 'svg' ? 'svg' : 'ai');
+    setGallerySearch('');
+    setGalleryCategory('all');
     setAiAvailable(AI_FEATURE_ENABLED && isAiConfigured());
     setAiBusy(false);
     setAiFailure('');
@@ -65,6 +71,24 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const galleryCategories = useMemo(() => {
+    const cats = Array.from(new Set(GALLERY_IMAGES.map((img) => img.category)));
+    return ['all', ...cats];
+  }, []);
+
+  const filteredGalleryImages = useMemo(() => {
+    const q = gallerySearch.trim().toLowerCase();
+    return GALLERY_IMAGES.filter((img) => {
+      const matchesCategory = galleryCategory === 'all' || img.category === galleryCategory;
+      const matchesSearch =
+        !q ||
+        img.name.toLowerCase().includes(q) ||
+        img.category.toLowerCase().includes(q) ||
+        img.id.toLowerCase().includes(q);
+      return matchesCategory && matchesSearch;
+    });
+  }, [gallerySearch, galleryCategory]);
+
   if (!open) return null;
 
   const toggleCategory = (categoryId: string) => {
@@ -80,7 +104,6 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
     setAiBusy(true);
     setAiFailure('');
     try {
-      // LangGraph + klient Gemini ładowane dopiero tutaj — poza głównym pakietem strony
       const { generateItemPicture } = await import('../lib/ai/imageGraph');
       const result = await generateItemPicture(trimmed);
       if (result.image) setIcon({ kind: 'ai', url: result.image });
@@ -122,14 +145,14 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-slate-800">
             {editingItem ? 'Edytuj rzecz' : 'Dodaj nową rzecz'}
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
+            className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center cursor-pointer transition"
           >
             <IconClose className="w-4 h-4" />
           </button>
@@ -148,77 +171,239 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
             />
           </div>
 
-          {/* Obrazek AI: rysuje Gemini po nazwie (logowanie przez Google — bez kluczy).
-              Na razie wyłączony — flaga AI_FEATURE_ENABLED w src/lib/ai/config.ts. */}
-          {AI_FEATURE_ENABLED && (
+          {/* Wybór grafiki / ikonki */}
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
-              Obrazek AI <span className="normal-case font-medium text-slate-400">(rysuje Gemini — opcjonalnie)</span>
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
+              Grafika rzeczy
             </label>
-            <div className="flex items-center gap-3 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-fuchsia-50 p-3">
-              {icon.kind === 'ai' && (
-                <img
-                  src={icon.url}
-                  alt="Obrazek AI"
-                  className="w-16 h-16 object-contain rounded-xl bg-white border border-indigo-100 shadow-sm"
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => void handleGenerateAi()}
-                disabled={!name.trim() || aiBusy || !aiAvailable}
-                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm shadow-md transition"
-              >
-                {aiBusy ? '🎨 Maluję…' : icon.kind === 'ai' ? '✨ Narysuj jeszcze raz' : '✨ Narysuj z nazwy'}
-              </button>
-              {icon.kind === 'ai' && (
+
+            {/* Podgląd aktualnie wybranej grafiki */}
+            <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl mb-3">
+              <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
+                {icon.kind === 'ai' ? (
+                  <img src={icon.url} alt="Wybrana grafika" className="w-full h-full object-contain" />
+                ) : icon.kind === 'svg' ? (
+                  <div
+                    className="w-full h-full p-0.5"
+                    dangerouslySetInnerHTML={{ __html: SVG_DRAWINGS[icon.key] || '' }}
+                  />
+                ) : (
+                  <span className="text-3xl select-none">{icon.value}</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  {icon.kind === 'ai'
+                    ? '🌟 Ilustracja 2D Cartoon'
+                    : icon.kind === 'svg'
+                    ? '✏️ Rysunek wektorowy'
+                    : '😀 Emotka'}
+                </div>
+                <div className="text-sm font-bold text-slate-800 truncate">
+                  {icon.kind === 'ai'
+                    ? GALLERY_IMAGES.find((g) => g.url === icon.url)?.name ?? 'Ilustracja 2D'
+                    : icon.kind === 'svg'
+                    ? `Wektor: ${icon.key}`
+                    : `Emoji: ${icon.value}`}
+                </div>
+                <div className="text-[11px] text-slate-500 truncate">
+                  {icon.kind === 'ai'
+                    ? GALLERY_IMAGES.find((g) => g.url === icon.url)?.category ?? 'Katalog grafik'
+                    : 'Kliknij poniżej, aby wybrać inną'}
+                </div>
+              </div>
+              {icon.kind !== 'emoji' && (
                 <button
                   type="button"
                   onClick={() => setIcon({ kind: 'emoji', value: EMOJI_LIST[0] })}
-                  className="ml-auto text-xs font-bold text-slate-400 hover:text-rose-600 transition"
+                  className="text-xs text-slate-400 hover:text-rose-600 font-semibold px-2 py-1 rounded-lg hover:bg-slate-200/60 transition shrink-0 cursor-pointer"
+                  title="Przywróć standardowe emoji"
                 >
-                  usuń obrazek AI
+                  Usuń grafikę
                 </button>
               )}
             </div>
-            {aiFailure && <p className="text-xs text-rose-600 font-semibold mt-1">Ups: {aiFailure}</p>}
-            {!aiAvailable && (
-              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                Obrazki AI działają po jednorazowej konfiguracji Google (logowanie przez Google,
-                bez żadnych kluczy API): ⚙️ ustawienia → „Obrazki AI”.
-              </p>
-            )}
-          </div>
-          )}
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Wybierz rysunek / ikonkę</label>
-            <div className="max-h-52 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50 space-y-2">
-              <div className="grid grid-cols-5 gap-1.5">
-                {Object.entries(SVG_DRAWINGS).map(([key, svg]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    title={key}
-                    onClick={() => setIcon({ kind: 'svg', key })}
-                    className={`h-12 p-1.5 ${optionClasses(isSelected({ kind: 'svg', key }))}`}
-                    dangerouslySetInnerHTML={{ __html: svg }}
-                  />
-                ))}
-              </div>
-              <div className="grid grid-cols-6 gap-2">
-                {EMOJI_LIST.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setIcon({ kind: 'emoji', value: emoji })}
-                    className={`text-2xl p-2 ${optionClasses(isSelected({ kind: 'emoji', value: emoji }))}`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+            {/* Przełącznik zakładek */}
+            <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-2.5">
+              <button
+                type="button"
+                onClick={() => setActiveGraphicTab('ai')}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeGraphicTab === 'ai'
+                    ? 'bg-white text-indigo-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>🌟 Ilustracje 2D</span>
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-full font-bold">
+                  {GALLERY_IMAGES.length}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveGraphicTab('svg')}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeGraphicTab === 'svg'
+                    ? 'bg-white text-indigo-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>✏️ Wektorowe</span>
+                <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full font-bold">
+                  {Object.keys(SVG_DRAWINGS).length}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveGraphicTab('emoji')}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeGraphicTab === 'emoji'
+                    ? 'bg-white text-indigo-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>😀 Emoji</span>
+                <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full font-bold">
+                  {EMOJI_LIST.length}
+                </span>
+              </button>
             </div>
+
+            {/* Zawartość zakładki: Ilustracje 2D */}
+            {activeGraphicTab === 'ai' && (
+              <div className="space-y-2 p-2.5 border border-slate-200 rounded-2xl bg-slate-50">
+                {/* Wyszukiwarka */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={gallerySearch}
+                    onChange={(e) => setGallerySearch(e.target.value)}
+                    placeholder="🔍 Szukaj ilustracji (np. termos, czepek, kurtka, szlafrok...)"
+                    className="w-full text-xs px-3 py-2 pr-7 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                  />
+                  {gallerySearch && (
+                    <button
+                      type="button"
+                      onClick={() => setGallerySearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtry kategorii */}
+                <div className="flex gap-1 overflow-x-auto pb-1 text-[11px] no-scrollbar">
+                  {galleryCategories.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setGalleryCategory(cat)}
+                      className={`px-2.5 py-1 rounded-lg shrink-0 font-medium transition cursor-pointer ${
+                        galleryCategory === cat
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cat === 'all' ? 'Wszystkie' : cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Siatka ilustracji */}
+                <div className="grid grid-cols-4 gap-2 max-h-56 overflow-y-auto pr-1">
+                  {filteredGalleryImages.map((img) => {
+                    const selected = isSelected({ kind: 'ai', url: img.url });
+                    return (
+                      <button
+                        key={img.id}
+                        type="button"
+                        onClick={() => setIcon({ kind: 'ai', url: img.url })}
+                        className={`relative flex flex-col items-center justify-between p-2 rounded-xl transition bg-white border text-left group cursor-pointer ${
+                          selected
+                            ? 'border-indigo-600 ring-2 ring-indigo-400 bg-indigo-50/60 shadow-sm'
+                            : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        {selected && (
+                          <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs z-10">
+                            <IconCheck className="w-2.5 h-2.5" />
+                          </span>
+                        )}
+                        <div className="w-14 h-14 flex items-center justify-center p-0.5 mb-1 shrink-0">
+                          <img
+                            src={img.url}
+                            alt={img.name}
+                            className="w-full h-full object-contain drop-shadow-xs group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <span className="text-[10px] font-semibold text-slate-700 text-center line-clamp-2 leading-tight w-full">
+                          {img.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {filteredGalleryImages.length === 0 && (
+                    <div className="col-span-4 py-8 text-center text-xs text-slate-400">
+                      Brak ilustracji pasujących do „{gallerySearch}”
+                    </div>
+                  )}
+                </div>
+
+                {AI_FEATURE_ENABLED && (
+                  <div className="mt-2 flex items-center gap-2 p-2 rounded-xl bg-indigo-50 border border-indigo-100">
+                    <button
+                      type="button"
+                      onClick={() => void handleGenerateAi()}
+                      disabled={!name.trim() || aiBusy || !aiAvailable}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition cursor-pointer"
+                    >
+                      {aiBusy ? '🎨 Maluję…' : '✨ Wygeneruj nowy obrazek z nazwy'}
+                    </button>
+                    {aiFailure && <p className="text-[11px] text-rose-600 font-semibold">{aiFailure}</p>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Zawartość zakładki: Rysunki wektorowe */}
+            {activeGraphicTab === 'svg' && (
+              <div className="max-h-56 overflow-y-auto p-2 border border-slate-200 rounded-2xl bg-slate-50">
+                <div className="grid grid-cols-5 gap-1.5">
+                  {Object.entries(SVG_DRAWINGS).map(([key, svg]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      title={key}
+                      onClick={() => setIcon({ kind: 'svg', key })}
+                      className={`h-12 p-1.5 cursor-pointer ${optionClasses(isSelected({ kind: 'svg', key }))}`}
+                      dangerouslySetInnerHTML={{ __html: svg }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Zawartość zakładki: Emoji */}
+            {activeGraphicTab === 'emoji' && (
+              <div className="max-h-56 overflow-y-auto p-2 border border-slate-200 rounded-2xl bg-slate-50">
+                <div className="grid grid-cols-6 gap-2">
+                  {EMOJI_LIST.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setIcon({ kind: 'emoji', value: emoji })}
+                      className={`text-2xl p-2 cursor-pointer ${optionClasses(
+                        isSelected({ kind: 'emoji', value: emoji }),
+                      )}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -231,7 +416,7 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
                     key={person.id}
                     type="button"
                     onClick={() => setPersonId(person.id)}
-                    className={`px-3 py-1.5 rounded-xl border text-sm font-bold transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-xl border text-sm font-bold transition flex items-center gap-1.5 cursor-pointer ${
                       selected
                         ? `${person.color} ring-2 ring-indigo-500 shadow-sm`
                         : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
@@ -259,13 +444,13 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition cursor-pointer"
             >
               Anuluj
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition cursor-pointer"
             >
               Zapisz rzecz
             </button>

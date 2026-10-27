@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectResult, PackingItem, SyncStatus } from '../types';
 import { DEFAULT_ITEMS } from '../data/defaultItems';
 import { ALL_PERSONS_ID } from '../data/persons';
-import { loadStoredItems, storeItems } from '../lib/storage';
+import { enrichWithDefaults, loadStoredItems, storeItems } from '../lib/storage';
 import {
   clearCloudCredentials,
   fetchRevisionItems,
@@ -230,7 +230,7 @@ export function usePackingList() {
     setSyncStatus('loading');
     try {
       const remote = await pullItemsFromCloud();
-      if (remote) commit(remote, { cloud: false });
+      if (remote) commit(enrichWithDefaults(remote, DEFAULT_ITEMS), { cloud: false });
       setSyncError('');
       setSyncStatus('saved');
     } catch (e) {
@@ -273,7 +273,7 @@ export function usePackingList() {
           setGistId(gistId);
           const remote = await pullItemsFromCloud();
           if (remote) {
-            commit(remote, { cloud: false });
+            commit(enrichWithDefaults(remote, DEFAULT_ITEMS), { cloud: false });
           } else {
             await pushItemsToCloud(itemsRef.current);
           }
@@ -319,7 +319,7 @@ export function usePackingList() {
     async (versionSha: string): Promise<void> => {
       const { items: oldItems, updatedAt } = await fetchRevisionItems(versionSha);
       setLocalUpdatedAt(updatedAt);
-      commit(oldItems); // cloud: true — historia zachowa też obecną wersję
+      commit(enrichWithDefaults(oldItems, DEFAULT_ITEMS)); // cloud: true — historia zachowa też obecną wersję
     },
     [commit],
   );
