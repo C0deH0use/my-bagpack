@@ -2,6 +2,7 @@ import type { Category, PackingItem, Person } from '../types';
 import { personById } from '../data/persons';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
 import { IconCheck, IconClose, IconPlus } from './icons';
+import { getItemImageUrl } from '../lib/imageUrl';
 
 interface CatalogPickerModalProps {
   open: boolean;
@@ -78,7 +79,7 @@ export function CatalogPickerModal({
                   style={!item.aiImage && owner.svgFilter ? { filter: owner.svgFilter } : undefined}
                 >
                   {item.aiImage ? (
-                    <img src={item.aiImage} alt="" className="w-full h-full object-contain" />
+                    <img src={getItemImageUrl(item.aiImage)} alt="" className="w-full h-full object-contain" />
                   ) : svg ? (
                     <span className="w-full h-full block" dangerouslySetInnerHTML={{ __html: svg }} />
                   ) : (

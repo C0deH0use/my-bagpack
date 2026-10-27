@@ -9,6 +9,7 @@ import { GALLERY_IMAGES } from '../data/galleryImages';
 import { CategoryMultiSelect } from './CategoryMultiSelect';
 import { IconCheck, IconClose } from './icons';
 import { AI_FEATURE_ENABLED, isAiConfigured } from '../lib/ai/config';
+import { getItemImageUrl } from '../lib/imageUrl';
 
 /** Wybrana grafika: rysunek SVG, emoji albo ilustracja 2D Cartoon */
 type IconChoice =
@@ -181,7 +182,7 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
             <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl mb-3">
               <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
                 {icon.kind === 'ai' ? (
-                  <img src={icon.url} alt="Wybrana grafika" className="w-full h-full object-contain" />
+                  <img src={getItemImageUrl(icon.url)} alt="Wybrana grafika" className="w-full h-full object-contain" />
                 ) : icon.kind === 'svg' ? (
                   <div
                     className="w-full h-full p-0.5"
@@ -333,7 +334,7 @@ export function ItemModal({ open, editingItem, defaultCategoryId, defaultPersonI
                         )}
                         <div className="w-14 h-14 flex items-center justify-center p-0.5 mb-1 shrink-0">
                           <img
-                            src={img.url}
+                            src={getItemImageUrl(img.url)}
                             alt={img.name}
                             className="w-full h-full object-contain drop-shadow-xs group-hover:scale-105 transition-transform"
                           />

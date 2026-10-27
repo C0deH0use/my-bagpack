@@ -1,6 +1,7 @@
 import type { PackingItem, Person } from '../types';
 import { SVG_DRAWINGS } from '../data/svgDrawings';
 import { IconCheck, IconEdit, IconTrash } from './icons';
+import { getItemImageUrl } from '../lib/imageUrl';
 
 interface ItemCardProps {
   item: PackingItem;
@@ -70,7 +71,7 @@ export function ItemCard({
       style={imageStyle}
     >
       {item.aiImage ? (
-        <img src={item.aiImage} alt={item.name} draggable={false} className="w-20 h-20 object-contain p-1 rounded-xl" />
+        <img src={getItemImageUrl(item.aiImage)} alt={item.name} draggable={false} className="w-20 h-20 object-contain p-1 rounded-xl" />
       ) : svg ? (
         <div className="w-20 h-20 flex items-center justify-center p-1" dangerouslySetInnerHTML={{ __html: svg }} />
       ) : (
