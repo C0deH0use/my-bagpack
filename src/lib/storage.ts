@@ -24,6 +24,8 @@ export function enrichWithDefaults(items: PackingItem[], fallback: PackingItem[]
       // Jeśli domyślna rzecz ma aiImage, upewnij się że zapisany element również go posiada
       if (fb.aiImage && (!item.aiImage || item.aiImage.startsWith('/items/'))) {
         item.aiImage = fb.aiImage;
+      } else if (!fb.aiImage && item.aiImage && item.aiImage.includes('odziez_termiczna')) {
+        delete item.aiImage;
       }
       if (fb.svgKey && !item.svgKey) {
         item.svgKey = fb.svgKey;

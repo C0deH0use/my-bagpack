@@ -42,10 +42,6 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'czapka_daszek', name: 'Czapka z daszkiem (dynamiczny styl 3/4)', category: 'Czapki & Nakrycia głowy', url: '/items/czapka_daszek.jpg' },
   { id: 'szalik_komin', name: 'Szalik wełniany & Komin polarowy', category: 'Czapki & Nakrycia głowy', url: '/items/szalik_komin.jpg' },
 
-  // ——— ❄️ Odzież termiczna ———
-  { id: 'odziez_termiczna_marek', name: 'Odzież termiczna męska (Marek)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_marek.jpg' },
-  { id: 'odziez_termiczna_aga', name: 'Odzież termiczna damska (Aga)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_aga.jpg' },
-  { id: 'odziez_termiczna_ania', name: 'Odzież termiczna dziewczęca (Ania)', category: 'Odzież termiczna & Zima', url: '/items/odziez_termiczna_ania.jpg' },
 
   // ——— 🧥 Kurtki & Peleryny & Bielizna ———
   { id: 'softshell_koralowy', name: 'Kurtka Softshell (koralowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_koralowy.jpg' },
