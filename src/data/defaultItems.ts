@@ -144,6 +144,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('83', 'aga', 'Karta EKUZ', '', '💳', { zagranica: 1 }),
   item('84', 'aga', 'Komin/opaska', '', '🧣', { turystyczne: 1, zima: 1 }),
   item('85', 'aga', 'Kurtka', '', '🧥', { turystyczne: 1, zagranica: 1, zima: 1 }),
+  item('216', 'aga', 'Kurtka narciarska', '', '⛷️', { zima: 1 }),
   item('86', 'aga', 'Lekarstwo - tarczyca', '', '💊', { leki: 1 }),
   item('87', 'aga', 'Odzież termiczna', '', '❄️', { turystyczne: 1, rowery: 1, zima: 1 }),
   item('88', 'aga', 'Okulary słoneczne', 'okulary', '🕶️', { ogolne: 1 }),
