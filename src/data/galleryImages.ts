@@ -6,10 +6,11 @@ export interface GalleryImage {
 }
 
 export const GALLERY_IMAGES: GalleryImage[] = [
-  // ——— ☕ Termosy & Naczynia termiczne ———
+  // ——— ☕ Termosy & Naczynia termiczne & Biwak ———
   { id: 'termos', name: 'Termos turystyczny', category: 'Termosy & Kuchnia', url: '/items/termos.jpg' },
   { id: 'termos_obiadowy', name: 'Termos obiadowy na zupę', category: 'Termosy & Kuchnia', url: '/items/termos_obiadowy.jpg' },
   { id: 'kubek_termiczny', name: 'Kubek termiczny z ustnikiem', category: 'Termosy & Kuchnia', url: '/items/kubek_termiczny.jpg' },
+  { id: 'menazka', name: 'Menażka turystyczna (zestaw biwakowy)', category: 'Termosy & Kuchnia', url: '/items/menazka.jpg' },
 
   // ——— 🍾 Korkociągi & Otwieracze ———
   { id: 'otwieracz_do_wina', name: 'Otwieracz do wina (trybuszon)', category: 'Akcesoria & Narzędzia', url: '/items/otwieracz_do_wina.jpg' },
@@ -43,7 +44,11 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'szalik_komin', name: 'Szalik wełniany & Komin polarowy', category: 'Czapki & Nakrycia głowy', url: '/items/szalik_komin.jpg' },
 
 
-  // ——— 🧥 Kurtki & Peleryny & Bielizna ———
+  // ——— 🧥 Kurtki & Swetry & Odzież codzienna ———
+  { id: 'bluza', name: 'Bluza dresowa z kapturem (hoodie)', category: 'Odzież & Przeciwdeszczowe', url: '/items/bluza.jpg' },
+  { id: 'sweter', name: 'Sweter ciepły (dzianinowy)', category: 'Odzież & Przeciwdeszczowe', url: '/items/sweter.jpg' },
+  { id: 'polar', name: 'Polar turystyczny ze stójką', category: 'Odzież & Przeciwdeszczowe', url: '/items/polar.jpg' },
+  { id: 'kurtka_narciarska_marek', name: 'Kurtka narciarska męska (Marek)', category: 'Odzież & Przeciwdeszczowe', url: '/items/kurtka_narciarska_marek.jpg' },
   { id: 'softshell_koralowy', name: 'Kurtka Softshell (koralowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_koralowy.jpg' },
   { id: 'softshell_turkusowy', name: 'Kurtka Softshell (turkusowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_turkusowy.jpg' },
   { id: 'softshell_grafitowy', name: 'Kurtka Softshell męska (grafitowa)', category: 'Odzież & Przeciwdeszczowe', url: '/items/softshell_grafitowy.jpg' },
@@ -52,9 +57,17 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'peleryna_przezroczysta', name: 'Peleryna przeciwdeszczowa przezroczysta', category: 'Odzież & Przeciwdeszczowe', url: '/items/peleryna_przezroczysta.jpg' },
   { id: 'biustonosz', name: 'Biustonosz sportowy / komfortowy (Aga)', category: 'Odzież & Przeciwdeszczowe', url: '/items/biustonosz.jpg' },
 
+  // ——— ❄️ Odzież termiczna ———
+  { id: 'odziez_termiczna_marek', name: 'Odzież termiczna męska (Marek)', category: 'Odzież & Przeciwdeszczowe', url: '/items/odziez_termiczna_marek.jpg' },
+  { id: 'odziez_termiczna_aga', name: 'Odzież termiczna damska (Aga)', category: 'Odzież & Przeciwdeszczowe', url: '/items/odziez_termiczna_aga.jpg' },
+  { id: 'odziez_termiczna_ania', name: 'Odzież termiczna dziewczęca (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/odziez_termiczna_ania.jpg' },
+
   // ——— 🏖️ Ręczniki & Kąpiel ———
-  { id: 'recznik', name: 'Ręcznik kąpielowy frotte / mikrofibra', category: 'Ręczniki & Kąpiel', url: '/items/recznik.jpg' },
+  { id: 'recznik_frotte', name: 'Ręcznik kąpielowy frotte (turkusowy)', category: 'Ręczniki & Kąpiel', url: '/items/recznik_frotte.jpg' },
+  { id: 'recznik_mikrofibra', name: 'Ręcznik szybkoschnący (mikrofibra)', category: 'Ręczniki & Kąpiel', url: '/items/recznik_mikrofibra.jpg' },
+  { id: 'recznik_plazowy', name: 'Ręcznik plażowy w pasy cabana', category: 'Ręczniki & Kąpiel', url: '/items/recznik_plazowy.jpg' },
   { id: 'recznik_kaptur', name: 'Ręcznik z kapturem (ponczo dziecięce)', category: 'Ręczniki & Kąpiel', url: '/items/recznik_kaptur.jpg' },
+  { id: 'szlafrok_tygrysek', name: 'Szlafrok pluszowy tygrysek (Ania)', category: 'Ręczniki & Kąpiel', url: '/items/szlafrok_tygrysek.jpg' },
 
   // ——— 🏊‍♀️ Basen & Woda ———
   { id: 'czepek_blekitny', name: 'Czepek basenowy błękitny', category: 'Basen & Pływanie', url: '/items/czepek_blekitny.jpg' },
@@ -74,6 +87,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'ladowarka_apple_watch', name: 'Ładowarka Apple Watch', category: 'Elektronika & Kable', url: '/items/ladowarka_apple_watch.jpg' },
 
   // ——— 👶 Niemowlę & Dziecko ———
+  { id: 'pajacyk', name: 'Pajacyk niemowlęcy ze stópkami (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/pajacyk.jpg' },
   { id: 'body_tymek', name: 'Body niemowlęce z napkami (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/body_tymek.jpg' },
   { id: 'kombinezon_batman', name: 'Kombinezon jesienny Batman (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_batman.jpg' },
   { id: 'kombinezon_mis', name: 'Kombinezon z uszkami misia (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_mis.jpg' },
