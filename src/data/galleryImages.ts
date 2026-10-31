@@ -81,6 +81,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'czepek_sportowy', name: 'Czepek basenowy sportowy', category: 'Basen & Pływanie', url: '/items/czepek_sportowy.jpg' },
 
   // ——— 🪥 Higiena & Kosmetyczka ———
+  { id: 'zel_do_mycia_twarzy', name: 'Żel do mycia twarzy (dermokosmetyk)', category: 'Higiena & Kosmetyczka', url: '/items/zel_do_mycia_twarzy.jpg' },
   { id: 'szczoteczki_pasty', name: 'Szczoteczki i pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
   { id: 'szczoteczki_pasty_etui', name: 'Etui podróżne na szczoteczkę i pastę', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_etui.jpg' },
   { id: 'szczoteczki_pasty_kubek', name: 'Kubek ze szczoteczkami i pastą', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_kubek.jpg' },

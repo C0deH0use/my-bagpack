@@ -86,7 +86,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('33', 'wspolne', 'Zapalniczka', 'zapalniczka_czerwona', '🔥', { ogolne: 1, turystyczne: 1 }, '/items/zapalniczka_czerwona.jpg'),
   item('201', 'wspolne', 'Zapalniczka metalowa (benzynowa)', 'zapalniczka_metalowa', '🔥', {} /* tylko katalog */, '/items/zapalniczka_metalowa.jpg'),
   item('34', 'wspolne', 'Złodziej', '', '🕵️', { turystyczne: 1, zima: 1 }),
-  item('35', 'wspolne', 'Żel do mycia twarzy', '', '🧼', { ogolne: 1 }),
+  item('35', 'wspolne', 'Żel do mycia twarzy', '', '🧴', { ogolne: 1 }, '/items/zel_do_mycia_twarzy.jpg'),
   item('36', 'wspolne', 'Żel pod prysznic', '', '🧴', { ogolne: 1 }),
   // ——— 👨 Marek ———
   item('37', 'marek', 'Bagażnik do sakw', '', '🚲', { rowery: 1 }),
