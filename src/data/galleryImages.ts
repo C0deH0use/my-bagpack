@@ -35,6 +35,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'zapalniczka_metalowa', name: 'Zapalniczka benzynowa metalowa', category: 'Gospodarcze', url: '/items/zapalniczka_metalowa.jpg' },
 
   // ——— 🛌 Śpiwory & Biwak ———
+  { id: 'koc_plazowy', name: 'Koc plażowy / piknikowy (z rączką)', category: 'Biwak & Turystyka', url: '/items/koc_plazowy.jpg' },
   { id: 'spiwor_mumia', name: 'Śpiwór trekkingowy (mumia)', category: 'Biwak & Turystyka', url: '/items/spiwor_mumia.jpg' },
   { id: 'spiwor_koldra', name: 'Śpiwór turystyczny (kołdra)', category: 'Biwak & Turystyka', url: '/items/spiwor_koldra.jpg' },
   { id: 'spiwor_kompresyjny', name: 'Śpiwór w worku kompresyjnym', category: 'Biwak & Turystyka', url: '/items/spiwor_kompresyjny.jpg' },
@@ -45,6 +46,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
 
 
   // ——— 🧥 Kurtki & Swetry & Odzież codzienna ———
+  { id: 'buty_zimowe', name: 'Buty zimowe (trapery z nubuku)', category: 'Odzież & Przeciwdeszczowe', url: '/items/buty_zimowe.jpg' },
   { id: 'bluza', name: 'Bluza dresowa z kapturem (hoodie)', category: 'Odzież & Przeciwdeszczowe', url: '/items/bluza.jpg' },
   { id: 'sweter', name: 'Sweter ciepły (dzianinowy)', category: 'Odzież & Przeciwdeszczowe', url: '/items/sweter.jpg' },
   { id: 'polar', name: 'Polar turystyczny ze stójką', category: 'Odzież & Przeciwdeszczowe', url: '/items/polar.jpg' },
