@@ -241,7 +241,6 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('155', 'tymek', 'Pajacyki', 'pizama', '🌙', { ogolne: 1, turystyczne: 1, zagranica: 1 }, '/items/pajacyk.jpg'),
   item('156', 'tymek', 'Pieluchy', 'pieluchy', '🧷', { ogolne: 1, turystyczne: 1, zagranica: 1 }, '/items/pieluchy.jpg'),
   item('157', 'tymek', 'Pieluchy tetra', 'pielucha_tetra', '🧷', { ogolne: 1, turystyczne: 1, zagranica: 1 }, '/items/pielucha_tetra.jpg'),
-  item('195', 'tymek', 'Pieluszka wielorazowa (otulacz)', 'pielucha_wielorazowa', '🌱', {} /* tylko katalog */),
   item('158', 'tymek', 'Płyn do kąpieli', '', '🛁', { ogolne: 1, turystyczne: 1, zagranica: 1 }),
   item('159', 'tymek', 'Podkłady', '', '🧻', { ogolne: 1, turystyczne: 1, zagranica: 1 }),
   item('160', 'tymek', 'Ręcznik', 'recznik', '🏖️', { ogolne: 1, turystyczne: 1, zagranica: 1 }, '/items/recznik_frotte.jpg'),
