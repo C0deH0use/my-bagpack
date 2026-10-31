@@ -40,7 +40,7 @@ PROMPTS = [
     },
     {
         "filename": "kapcie.jpg",
-        "prompt": "A pair of cozy, soft slip-on indoor house slippers with enclosed rounded toes for a child in a charming 2D cartoon cel-shaded animation series style. Features: plush velvet/felt upper in soft pastel blush powder pink or warm vanilla cream, decorated with a tiny subtle embroidered sleeping yellow star on the top, with a thick cushioned soft felt sole. Bold dark ink outlines, smooth cel-shading, isolated on pure solid flat white background (#ffffff) with soft drop shadow underneath. No feet, no text, no watermark."
+        "prompt": "A pair of cozy, fluffy indoor house slippers (papucie domowe) with fully enclosed rounded toes and closed back for a young child, placed side by side angled in 3/4 view in a charming 2D cartoon cel-shaded animation series style. NOT sandals, NOT flip-flops, NOT open toes. Features: ultra-soft plush pink fleece material with white faux-fur fleece lining around the ankle opening, a cute little embroidered golden sleeping star on the top of each slipper, and a thick flat soft non-slip sole. Clean bold dark ink outlines, smooth flat cel-shading, centered on pure solid flat white background (#ffffff) with soft drop shadow. No feet, no human, no watermark."
     },
 
     # Grupa B: Koce
@@ -49,8 +49,8 @@ PROMPTS = [
         "prompt": "A cozy, luxurious wool tartan plaid throw blanket (pled) neatly folded with soft fringe tassels draping down on one side, tied with a decorative fabric ribbon, in a charming 2D cartoon cel-shaded animation series style. Pattern: rich classic tartan plaid in deep forest green, navy blue, and warm burgundy lines. Clean bold dark ink outlines, smooth flat cel-shading, soft fabric drape. Centered on a pure solid flat white background (#ffffff) with a soft subtle drop shadow underneath. No text, no watermark."
     },
     {
-        "filename": "koc_turystyczny.jpg",
-        "prompt": "A rugged outdoor travel camp blanket rolled into a tight compact cylinder and secured by two dark brown leather straps with brass metal buckles and a small top carrying loop, in a 2D cartoon cel-shaded animation series style. Color: deep outdoor military olive drab or dark khaki. Clean bold dark ink outlines, smooth cel-shading with subtle fabric texture. Centered on a pure solid flat white background (#ffffff) with soft drop shadow underneath. No text, no watermark."
+        "filename": "koc_czarny.jpg",
+        "prompt": "A cozy, thick solid deep jet-black fleece travel and car blanket, neatly folded in a clean rectangular stack in a charming 2D cartoon cel-shaded animation series style. Features: rich jet black soft fleece fabric with visible plush thickness and cozy rounded fabric folds, subtle charcoal grey highlights along the folded edges so the black form and depth are clearly visible and defined. Clean bold dark ink outlines, smooth cel-shading, Bluey and Gravity Falls aesthetic. Centered on a pure solid flat white background (#ffffff) with a soft subtle grey drop shadow underneath. No patterns, no stripes, no text, no watermark."
     },
     {
         "filename": "kocyk_tymek.jpg",
@@ -108,19 +108,31 @@ PROMPTS = [
 
 def main():
     client = genai.Client(api_key=API_KEY)
-    print(f"🚀 Rozpoczynam generowanie {len(PROMPTS)} grafik do: {OUTPUT_DIR}")
+    
+    # Obsługa argumentów z linii poleceń (np. python scripts/generate_batch.py koc_czarny.jpg kapcie.jpg --force)
+    requested = [a for a in sys.argv[1:] if not a.startswith("--")]
+    force = "--force" in sys.argv
+
+    prompts_to_run = PROMPTS
+    if requested:
+        prompts_to_run = [p for p in PROMPTS if p["filename"] in requested]
+        if not prompts_to_run:
+            print(f"Brak zdefiniowanych promptów dla: {requested}")
+            sys.exit(1)
+
+    print(f"🚀 Rozpoczynam generowanie {len(prompts_to_run)} grafik do: {OUTPUT_DIR}")
 
     success_count = 0
-    for idx, item in enumerate(PROMPTS, 1):
+    for idx, item in enumerate(prompts_to_run, 1):
         filename = item["filename"]
         target_path = OUTPUT_DIR / filename
         
-        if target_path.exists():
-            print(f"[{idx}/{len(PROMPTS)}] ⏩ Plik {filename} już istnieje, pomijam.")
+        if target_path.exists() and not force:
+            print(f"[{idx}/{len(prompts_to_run)}] ⏩ Plik {filename} już istnieje, pomijam (użyj --force aby nadpisać).")
             success_count += 1
             continue
 
-        print(f"[{idx}/{len(PROMPTS)}] 🎨 Generuję: {filename}...")
+        print(f"[{idx}/{len(prompts_to_run)}] 🎨 Generuję: {filename}...")
         try:
             # Użycie oficjalnego modelu Imagen 3 z Google GenAI SDK
             result = client.models.generate_images(

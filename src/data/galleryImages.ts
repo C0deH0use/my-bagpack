@@ -7,6 +7,7 @@ export interface GalleryImage {
 
 export const GALLERY_IMAGES: GalleryImage[] = [
   // ——— ☕ Termosy & Naczynia termiczne & Biwak ———
+  { id: 'bidon', name: 'Bidon turystyczny / rowerowy', category: 'Termosy & Kuchnia', url: '/items/bidon.jpg' },
   { id: 'termos', name: 'Termos turystyczny', category: 'Termosy & Kuchnia', url: '/items/termos.jpg' },
   { id: 'termos_obiadowy', name: 'Termos obiadowy na zupę', category: 'Termosy & Kuchnia', url: '/items/termos_obiadowy.jpg' },
   { id: 'kubek_termiczny', name: 'Kubek termiczny z ustnikiem', category: 'Termosy & Kuchnia', url: '/items/kubek_termiczny.jpg' },
@@ -24,29 +25,39 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'lampka_latarka', name: 'Latarka kieszonkowa', category: 'Oświetlenie & Biwak', url: '/items/lampka_latarka.jpg' },
 
   // ——— 🩹 Apteczka & Pierwsza pomoc ———
+  { id: 'lekarstwa', name: 'Apteczka / leki podręczne', category: 'Apteczka & Zdrowie', url: '/items/lekarstwa.jpg' },
   { id: 'bandaze', name: 'Bandaże medyczne (rolka)', category: 'Apteczka & Zdrowie', url: '/items/bandaze.jpg' },
   { id: 'bandaz_elastyczny', name: 'Bandaż elastyczny z zapinkami', category: 'Apteczka & Zdrowie', url: '/items/bandaz_elastyczny.jpg' },
   { id: 'bandaz_kompres', name: 'Kompres gazowy opatrunkowy', category: 'Apteczka & Zdrowie', url: '/items/bandaz_kompres.jpg' },
 
-  // ——— 🧺 Pranie & Ogień ———
+  // ——— 🧺 Pranie & Ogień & Gospodarcze ———
+  { id: 'rozdzielnik_gniazda', name: 'Rozdzielnik / złodziej do gniazdek', category: 'Gospodarcze', url: '/items/rozdzielnik_gniazda.png' },
   { id: 'proszek_pudelko', name: 'Proszek do prania (pudełko z miarką)', category: 'Gospodarcze', url: '/items/proszek_pudelko.jpg' },
   { id: 'proszek_plyn', name: 'Płyn do prania (butelka)', category: 'Gospodarcze', url: '/items/proszek_plyn.jpg' },
   { id: 'zapalniczka_czerwona', name: 'Zapalniczka piezoelektryczna', category: 'Gospodarcze', url: '/items/zapalniczka_czerwona.jpg' },
   { id: 'zapalniczka_metalowa', name: 'Zapalniczka benzynowa metalowa', category: 'Gospodarcze', url: '/items/zapalniczka_metalowa.jpg' },
 
   // ——— 🛌 Śpiwory & Biwak ———
+  { id: 'koc_czarny', name: 'Koc czarny (polarowy)', category: 'Biwak & Turystyka', url: '/items/koc_czarny.jpg' },
+  { id: 'koc_pleciony', name: 'Koc w kratę (pled wełniany)', category: 'Biwak & Turystyka', url: '/items/koc_pleciony.jpg' },
   { id: 'koc_plazowy', name: 'Koc plażowy / piknikowy (z rączką)', category: 'Biwak & Turystyka', url: '/items/koc_plazowy.jpg' },
   { id: 'spiwor_mumia', name: 'Śpiwór trekkingowy (mumia)', category: 'Biwak & Turystyka', url: '/items/spiwor_mumia.jpg' },
   { id: 'spiwor_koldra', name: 'Śpiwór turystyczny (kołdra)', category: 'Biwak & Turystyka', url: '/items/spiwor_koldra.jpg' },
   { id: 'spiwor_kompresyjny', name: 'Śpiwór w worku kompresyjnym', category: 'Biwak & Turystyka', url: '/items/spiwor_kompresyjny.jpg' },
 
   // ——— 🧢 Czapki & Nakrycia głowy ———
+  { id: 'gruba_czapka_zima', name: 'Gruba czapka zimowa z pomponem', category: 'Czapki & Nakrycia głowy', url: '/items/gruba_czapka_zima.jpg' },
   { id: 'czapka_daszek', name: 'Czapka z daszkiem (dynamiczny styl 3/4)', category: 'Czapki & Nakrycia głowy', url: '/items/czapka_daszek.jpg' },
   { id: 'szalik_komin', name: 'Szalik wełniany & Komin polarowy', category: 'Czapki & Nakrycia głowy', url: '/items/szalik_komin.jpg' },
 
-
   // ——— 🧥 Kurtki & Swetry & Odzież codzienna ———
+  { id: 'buty_trekkingowe', name: 'Buty trekkingowe górskie', category: 'Odzież & Przeciwdeszczowe', url: '/items/buty_trekkingowe.jpg' },
   { id: 'buty_zimowe', name: 'Buty zimowe (trapery z nubuku)', category: 'Odzież & Przeciwdeszczowe', url: '/items/buty_zimowe.jpg' },
+  { id: 'kapcie', name: 'Kapcie domowe z gwiazdką (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/kapcie.jpg' },
+  { id: 'spodnie_dlugie', name: 'Spodnie długie jeansowe (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/spodnie_dlugie.jpg' },
+  { id: 'spodnie_krotkie', name: 'Spodenki dresowe krótkie (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/spodnie_krotkie.jpg' },
+  { id: 'cieple_spodnie', name: 'Ciepłe spodnie śnieżne (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/cieple_spodnie.jpg' },
+  { id: 'pizama_ania', name: 'Piżamka dziecięca w gwiazdki (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/pizama_ania.jpg' },
   { id: 'bluza', name: 'Bluza dresowa z kapturem (hoodie)', category: 'Odzież & Przeciwdeszczowe', url: '/items/bluza.jpg' },
   { id: 'sweter', name: 'Sweter ciepły (dzianinowy)', category: 'Odzież & Przeciwdeszczowe', url: '/items/sweter.jpg' },
   { id: 'polar', name: 'Polar turystyczny ze stójką', category: 'Odzież & Przeciwdeszczowe', url: '/items/polar.jpg' },
@@ -78,24 +89,30 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'szlafrok_tygrysek', name: 'Szlafrok pluszowy tygrysek (Ania)', category: 'Ręczniki & Kąpiel', url: '/items/szlafrok_tygrysek.jpg' },
 
   // ——— 🏊‍♀️ Basen & Woda ———
+  { id: 'maska_nurkowanie', name: 'Maska i rurka do nurkowania', category: 'Basen & Pływanie', url: '/items/maska_nurkowanie.png' },
+  { id: 'klapki', name: 'Klapki basenowe / Japonki', category: 'Basen & Pływanie', url: '/items/klapki.jpg' },
   { id: 'czepek_blekitny', name: 'Czepek basenowy błękitny', category: 'Basen & Pływanie', url: '/items/czepek_blekitny.jpg' },
   { id: 'czepek_rozowy', name: 'Czepek basenowy różowy', category: 'Basen & Pływanie', url: '/items/czepek_rozowy.jpg' },
   { id: 'czepek_sportowy', name: 'Czepek basenowy sportowy', category: 'Basen & Pływanie', url: '/items/czepek_sportowy.jpg' },
 
   // ——— 🪥 Higiena & Kosmetyczka ———
   { id: 'zel_do_mycia_twarzy', name: 'Żel do mycia twarzy (dermokosmetyk)', category: 'Higiena & Kosmetyczka', url: '/items/zel_do_mycia_twarzy.jpg' },
+  { id: 'krem_opalanie', name: 'Krem przeciwsłoneczny (SPF 50)', category: 'Higiena & Kosmetyczka', url: '/items/krem_opalanie.jpg' },
+  { id: 'pomadka', name: 'Pomadka ochronna do ust', category: 'Higiena & Kosmetyczka', url: '/items/pomadka.jpg' },
   { id: 'szczoteczki_pasty', name: 'Szczoteczki i pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
   { id: 'szczoteczki_pasty_etui', name: 'Etui podróżne na szczoteczkę i pastę', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_etui.jpg' },
   { id: 'szczoteczki_pasty_kubek', name: 'Kubek ze szczoteczkami i pastą', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_kubek.jpg' },
   { id: 'szczoteczka_elektryczna', name: 'Szczoteczka soniczna / elektryczna', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_elektryczna.jpg' },
 
   // ——— 🔌 Elektronika & Ładowarki ———
+  { id: 'airtag_bagaz', name: 'AirTag do bagażu rejestrowanego', category: 'Elektronika & Kable', url: '/items/airtag_bagaz.png' },
   { id: 'ladowarka_usbc', name: 'Ładowarka USB-C', category: 'Elektronika & Kable', url: '/items/ladowarka_usbc.jpg' },
   { id: 'ladowarka_usbc_gan', name: 'Ładowarka wieloportowa GaN', category: 'Elektronika & Kable', url: '/items/ladowarka_usbc_gan.jpg' },
   { id: 'kabel_usbc', name: 'Kabel USB-C w oplocie', category: 'Elektronika & Kable', url: '/items/kabel_usbc.jpg' },
   { id: 'ladowarka_apple_watch', name: 'Ładowarka Apple Watch', category: 'Elektronika & Kable', url: '/items/ladowarka_apple_watch.jpg' },
 
   // ——— 👶 Niemowlę & Dziecko ———
+  { id: 'kocyk_tymek', name: 'Kocyk niemowlęcy ażurowy (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kocyk_tymek.jpg' },
   { id: 'pajacyk', name: 'Pajacyk niemowlęcy ze stópkami (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/pajacyk.jpg' },
   { id: 'body_tymek', name: 'Body niemowlęce z napkami (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/body_tymek.jpg' },
   { id: 'kombinezon_batman', name: 'Kombinezon jesienny Batman (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_batman.jpg' },
@@ -103,4 +120,8 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'kombinezon_pikowany', name: 'Kombinezon pikowany jesienny (Tymek)', category: 'Niemowlę & Dziecko', url: '/items/kombinezon_pikowany.jpg' },
   { id: 'pieluchy', name: 'Pieluchy jednorazowe', category: 'Niemowlę & Dziecko', url: '/items/pieluchy.jpg' },
   { id: 'pielucha_tetra', name: 'Pielucha tetrowa z agrafką', category: 'Niemowlę & Dziecko', url: '/items/pielucha_tetra.jpg' },
+
+  // ——— 🎨 Dziecięce & Zabawa ———
+  { id: 'blok_rysunkowy', name: 'Blok rysunkowy / kolorowanka (Ania)', category: 'Dziecięce & Zabawa', url: '/items/blok_rysunkowy.jpg' },
+  { id: 'kredki', name: 'Kredki w piórniku (Ania)', category: 'Dziecięce & Zabawa', url: '/items/kredki.jpg' },
 ];
