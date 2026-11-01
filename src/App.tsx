@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Category, PackingItem, Person } from './types';
 import { ALL_CATEGORY, ALL_CATEGORY_ID, CATEGORIES } from './data/categories';
-import { ALL_PERSONS_ID, PERSONS, personById } from './data/persons';
+import { ALL_PERSONS_ID, FAMILY_MEMBERS, PERSONS, SHARED_PERSON, SHARED_PERSON_ID, personById } from './data/persons';
 import { usePackingList, type ItemFormValues } from './hooks/usePackingList';
 import { normalizeItems } from './lib/items';
 import { playSound } from './lib/sounds';
@@ -20,8 +20,10 @@ import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas
 
 export default function App() {
   const [currentCategoryId, setCurrentCategoryId] = useState('wyjazd');
-  /** kontekst osoby: "kto pakuje" — filtruje rzeczy w kategorii i katalogu */
+  /** kontekst osoby: "kto pakuje" — 'wszyscy' | 'marek' | 'aga' | 'ania' | 'tymek' | 'none' */
   const [currentPersonId, setCurrentPersonId] = useState(ALL_PERSONS_ID);
+  /** czy dołączać rzeczy "Wspólne" niezależnie od wybranej osoby (multiselect) */
+  const [includeShared, setIncludeShared] = useState(true);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PackingItem | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [celebration, setCelebration] = useState<{ category: Category; person: Person | null } | null>(null);
+  const [celebration, setCelebration] = useState<{ category: Category; persons: Person[] } | null>(null);
   const confettiRef = useRef<ConfettiHandle>(null);
 
   const list = usePackingList();
@@ -40,12 +42,44 @@ export default function App() {
   const currentCategory =
     CATEGORIES.find((c) => c.id === currentCategoryId) ??
     (currentCategoryId === ALL_CATEGORY_ID ? ALL_CATEGORY : CATEGORIES[0]);
-  /** null = "Wszyscy" (bez filtra osoby) */
-  const currentPerson = currentPersonId === ALL_PERSONS_ID ? null : personById(currentPersonId);
+
+  /** Lista aktualnie aktywnych osób (do nagłówków, postępu i filtrów) */
+  const activePersons = useMemo(() => {
+    if (currentPersonId === ALL_PERSONS_ID) {
+      return includeShared ? [] : FAMILY_MEMBERS;
+    }
+    const result: Person[] = [];
+    if (currentPersonId !== 'none') {
+      const member = FAMILY_MEMBERS.find((p) => p.id === currentPersonId);
+      if (member) result.push(member);
+    }
+    if (includeShared) {
+      result.push(SHARED_PERSON);
+    }
+    return result;
+  }, [currentPersonId, includeShared]);
+
+  /** null = "Wszyscy" lub brak pojedynczej osoby */
+  const currentPerson =
+    currentPersonId !== ALL_PERSONS_ID && currentPersonId !== 'none'
+      ? personById(currentPersonId)
+      : null;
 
   const byContext = (items: PackingItem[]) => {
     let result = isCatalog ? items : items.filter((i) => i.categoryIds.includes(currentCategoryId));
-    if (currentPerson) result = result.filter((i) => i.personId === currentPerson.id);
+    if (currentPersonId === ALL_PERSONS_ID) {
+      if (!includeShared) {
+        result = result.filter((i) => i.personId !== SHARED_PERSON_ID);
+      }
+    } else if (currentPersonId === 'none') {
+      result = includeShared ? result.filter((i) => i.personId === SHARED_PERSON_ID) : [];
+    } else {
+      if (includeShared) {
+        result = result.filter((i) => i.personId === currentPersonId || i.personId === SHARED_PERSON_ID);
+      } else {
+        result = result.filter((i) => i.personId === currentPersonId);
+      }
+    }
     return result;
   };
 
@@ -178,14 +212,12 @@ export default function App() {
     const isPacked = item.packedIn.includes(currentCategoryId);
     playSound(isPacked ? 'check' : 'uncheck');
 
-    const relevant = currentPerson
-      ? next.filter((i) => i.personId === currentPerson.id && i.categoryIds.includes(currentCategoryId))
-      : next.filter((i) => i.categoryIds.includes(currentCategoryId));
+    const relevant = byContext(next);
     const allPacked = relevant.length > 0 && relevant.every((i) => i.packedIn.includes(currentCategoryId));
     if (isPacked && allPacked) {
       playSound('complete');
       confettiRef.current?.fire();
-      setCelebration({ category: currentCategory, person: currentPerson });
+      setCelebration({ category: currentCategory, persons: activePersons });
     }
   };
 
@@ -198,15 +230,47 @@ export default function App() {
     if (isCatalog) return;
     if (totalContextPacked === 0) return;
     const catName = currentCategory.name;
-    const personName = currentPerson ? ` (${currentPerson.name})` : '';
+    const personsText =
+      activePersons.length > 0 ? ` (${activePersons.map((p) => p.name).join(' + ')})` : '';
     if (
       window.confirm(
-        `Czy na pewno chcesz odznaczyć wszystkie (${totalContextPacked}) spakowane rzeczy w kategorii "${catName}"${personName}?`,
+        `Czy na pewno chcesz odznaczyć wszystkie (${totalContextPacked}) spakowane rzeczy w kategorii "${catName}"${personsText}?`,
       )
     ) {
-      // w kontekście osoby odświeżamy tylko jej checklistę w tej kategorii
-      list.resetCategory(currentCategoryId, currentPersonId);
+      // w kontekście osób odświeżamy checklistę tylko dla wybranych osób
+      const resetTargets =
+        activePersons.length > 0 ? activePersons.map((p) => p.id) : ALL_PERSONS_ID;
+      list.resetCategory(currentCategoryId, resetTargets);
       playSound('uncheck');
+    }
+  };
+
+  const handleSelectPerson = (id: string) => {
+    if (id === ALL_PERSONS_ID) {
+      setCurrentPersonId(ALL_PERSONS_ID);
+      setIncludeShared(true);
+      return;
+    }
+    // Kliknięcie już aktywnej osoby przełącza do widoku "Tylko wspólne" (o ile wspólne były aktywne)
+    if (currentPersonId === id) {
+      if (includeShared) {
+        setCurrentPersonId('none');
+      } else {
+        setCurrentPersonId(ALL_PERSONS_ID);
+        setIncludeShared(true);
+      }
+      return;
+    }
+    setCurrentPersonId(id);
+  };
+
+  const handleToggleShared = () => {
+    if (currentPersonId === 'none') {
+      // Jeśli byliśmy w widoku "Tylko wspólne" i klikamy Wspólne, wracamy do "Wszyscy"
+      setCurrentPersonId(ALL_PERSONS_ID);
+      setIncludeShared(true);
+    } else {
+      setIncludeShared((prev) => !prev);
     }
   };
 
@@ -260,12 +324,12 @@ export default function App() {
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none no-print">
           <div className="bounce-in bg-white rounded-3xl shadow-2xl border-4 border-emerald-300 px-10 py-8 text-center">
             <div className="text-7xl mb-3 wiggle">
-              {celebration.person ? celebration.person.icon : celebration.category.icon}
+              {celebration.persons.length === 1 ? celebration.persons[0].icon : celebration.category.icon}
             </div>
             <p className="text-3xl font-black text-emerald-600 tracking-wide">SPAKOWANE!</p>
             <p className="text-sm font-semibold text-slate-500 mt-1">
-              {celebration.person
-                ? `${celebration.person.name} — ${celebration.category.name} — gotowe! 🎉`
+              {celebration.persons.length > 0
+                ? `${celebration.persons.map((p) => p.name).join(' + ')} — ${celebration.category.name} — gotowe! 🎉`
                 : `${celebration.category.name} — gotowe! 🎉`}
             </p>
           </div>
@@ -290,15 +354,17 @@ export default function App() {
 
         {/* kontekst osoby działa też w katalogu — tam również pokazuje czyje to rzeczy */}
         <PersonTabs
-          persons={PERSONS}
-          currentId={currentPersonId}
+          currentPersonId={currentPersonId}
+          includeShared={includeShared}
           doneIds={personDoneIds}
-          onSwitch={setCurrentPersonId}
+          onSelectPerson={handleSelectPerson}
+          onToggleShared={handleToggleShared}
         />
 
         <ProgressCard
           category={currentCategory}
           person={currentPerson}
+          activePersons={activePersons}
           packedCount={totalContextPacked}
           totalCount={contextItems.length}
           catalogMode={isCatalog}
@@ -310,7 +376,7 @@ export default function App() {
           <h1 className="text-3xl font-bold text-slate-900 mb-1">Moja Lista do Spakowania 🎒</h1>
           <p className="text-lg text-slate-600 font-semibold">
             {currentCategory.icon} {currentCategory.name}
-            {currentPerson && ` — ${currentPerson.icon} ${currentPerson.name}`}
+            {activePersons.length > 0 && ` — ${activePersons.map((p) => `${p.icon} ${p.name}`).join(' + ')}`}
           </p>
           <p className="text-sm text-slate-400 mt-1">Sprawdź i zaznacz ptaszkiem lub naklejką przed wyjściem!</p>
         </div>
@@ -374,7 +440,7 @@ export default function App() {
                 catalogMode={isCatalog}
                 catalogCategoryFilter={catalogFilter}
                 owner={personById(item.personId)}
-                showOwner={!currentPerson}
+                showOwner={currentPersonId === ALL_PERSONS_ID || (includeShared && currentPersonId !== 'none')}
                 onToggle={handleToggle}
                 onChangeQuantity={handleChangeQuantity}
                 onEdit={openEditModal}
@@ -408,6 +474,7 @@ export default function App() {
           open={pickerOpen}
           category={currentCategory}
           person={currentPerson}
+          activePersons={activePersons}
           items={list.items}
           onToggleAssignment={list.toggleAssignment}
           onCreateNew={() => {

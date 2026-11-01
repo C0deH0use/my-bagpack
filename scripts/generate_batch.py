@@ -52,6 +52,14 @@ PROMPTS = [
         "filename": "kapcie_dorosli.jpg",
         "prompt": "A pair of comfortable classic slip-on mule house slippers for adults laid side by side in 3/4 view in a charming 2D cartoon cel-shaded animation series style. Features: dark navy blue felt upper with soft cream fleece lining and piped collar, a small subtle silver embroidered star motif, and a durable flat indoor foam rubber sole. Clean bold dark ink outlines, smooth cel-shading, centered on pure solid flat white background (#ffffff) with soft drop shadow underneath. No feet, no text, no watermark."
     },
+    {
+        "filename": "skarpetki.jpg",
+        "prompt": "A cheerful pair of clean, folded cotton crew socks laid side-by-side at a cozy 3/4 perspective angle, in a 2D cartoon cel-shaded animation series style (aesthetic of Bluey and Gravity Falls). Features: High-quality soft woven combed cotton in warm heather-grey fabric, with vibrant contrasting sunny-yellow or turquoise-blue reinforced heel cups, toe caps, and ribbed top cuffs. Subtle ribbed texture along the ankles, gentle organic fabric curves and folds. Bold dark ink outlines, smooth flat cel-shading with soft highlights, centered composition isolated on a pure flat solid white background (#ffffff) with a soft subtle grey drop shadow underneath. Empty socks (no human feet), no text, no watermark."
+    },
+    {
+        "filename": "skarpety_narciarskie.jpg",
+        "prompt": "A pair of technical high-cut thermal ski snow socks standing upright side-by-side at a 3/4 angle, in a 2D cartoon cel-shaded animation series style. Features: Thick warm merino-wool knit in deep navy and cobalt blue with protective ergonomic padded zones on the shins, heels, and toes in bright neon-lime green. Bold dark ink outlines, flat cel-shading, pure solid flat white background (#ffffff) with soft drop shadow. No feet, no text."
+    },
 
     # Grupa B: Koce
     {

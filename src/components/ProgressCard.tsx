@@ -5,6 +5,8 @@ interface ProgressCardProps {
   category: Category;
   /** kontekst osoby (null = "Wszyscy") — czyje rzeczy właśnie pakujemy */
   person?: Person | null;
+  /** lista aktywnych osób (np. Marek + Wspólne) */
+  activePersons?: Person[];
   packedCount: number;
   totalCount: number;
   /** tryb katalogu: bez pakowania, pokazujemy tylko liczbę rzeczy */
@@ -16,6 +18,7 @@ interface ProgressCardProps {
 export function ProgressCard({
   category,
   person,
+  activePersons,
   packedCount,
   totalCount,
   catalogMode = false,
@@ -32,11 +35,19 @@ export function ProgressCard({
           <div>
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 flex-wrap">
               {category.name}
-              {person && (
+              {activePersons && activePersons.length > 0 ? (
+                <span className="inline-flex items-center gap-1.5 flex-wrap">
+                  {activePersons.map((p) => (
+                    <span key={p.id} className={`text-xs font-bold px-2 py-0.5 rounded-md border ${p.color}`}>
+                      {p.icon} {p.name}
+                    </span>
+                  ))}
+                </span>
+              ) : person ? (
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${person.color}`}>
                   {person.icon} {person.name}
                 </span>
-              )}
+              ) : null}
             </h2>
             <p className="text-sm text-slate-500">
               {catalogMode

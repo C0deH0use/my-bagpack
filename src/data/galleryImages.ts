@@ -56,6 +56,8 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'buty_zimowe', name: 'Buty zimowe (trapery z nubuku)', category: 'Odzież & Przeciwdeszczowe', url: '/items/buty_zimowe.jpg' },
   { id: 'kapcie', name: 'Kapcie domowe z gwiazdką (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/kapcie.jpg' },
   { id: 'kapcie_dorosli', name: 'Kapcie domowe wsuwane (dorosłe)', category: 'Odzież & Przeciwdeszczowe', url: '/items/kapcie_dorosli.jpg' },
+  { id: 'skarpetki', name: 'Skarpetki bawełniane (codzienne)', category: 'Odzież & Przeciwdeszczowe', url: '/items/skarpetki.jpg' },
+  { id: 'skarpety_narciarskie', name: 'Skarpety narciarskie (termiczne)', category: 'Odzież & Przeciwdeszczowe', url: '/items/skarpety_narciarskie.jpg' },
   { id: 'spodnie_dlugie', name: 'Spodnie długie jeansowe (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/spodnie_dlugie.jpg' },
   { id: 'spodnie_krotkie', name: 'Spodenki dresowe krótkie (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/spodnie_krotkie.jpg' },
   { id: 'cieple_spodnie', name: 'Ciepłe spodnie śnieżne (Ania)', category: 'Odzież & Przeciwdeszczowe', url: '/items/cieple_spodnie.jpg' },
@@ -99,7 +101,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
 
   // ——— 🪥 Higiena & Kosmetyczka ———
   { id: 'zel_do_mycia_twarzy', name: 'Żel do mycia twarzy (dermokosmetyk)', category: 'Higiena & Kosmetyczka', url: '/items/zel_do_mycia_twarzy.jpg' },
-  { id: 'krem_opalanie', name: 'Krem przeciwsłoneczny (SPF 50)', category: 'Higiena & Kosmetyczka', url: '/items/krem_opalanie.jpg' },
+  { id: 'krem_opalanie', name: 'Krem do opalania (SPF 50)', category: 'Higiena & Kosmetyczka', url: '/items/krem_opalanie.jpg' },
   { id: 'pomadka', name: 'Pomadka ochronna do ust', category: 'Higiena & Kosmetyczka', url: '/items/pomadka.jpg' },
   { id: 'szczoteczki_pasty', name: 'Szczoteczki i pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
   { id: 'szczoteczki_pasty_etui', name: 'Etui podróżne na szczoteczkę i pastę', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_etui.jpg' },

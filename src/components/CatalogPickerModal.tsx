@@ -9,7 +9,9 @@ interface CatalogPickerModalProps {
   /** kategoria, którą właśnie komponujemy */
   category: Category;
   /** kontekst osoby (null = "Wszyscy") — czyje rzeczy podajemy do tej kategorii */
-  person: Person | null;
+  person?: Person | null;
+  /** lista aktywnych osób (np. Marek + Wspólne) */
+  activePersons?: Person[];
   items: PackingItem[];
   onToggleAssignment: (itemId: string, categoryId: string) => void;
   onCreateNew: () => void;
@@ -25,6 +27,7 @@ export function CatalogPickerModal({
   open,
   category,
   person,
+  activePersons,
   items,
   onToggleAssignment,
   onCreateNew,
@@ -32,20 +35,31 @@ export function CatalogPickerModal({
 }: CatalogPickerModalProps) {
   if (!open) return null;
 
-  const candidates = person ? items.filter((i) => i.personId === person.id) : items;
+  const candidates =
+    activePersons && activePersons.length > 0
+      ? items.filter((i) => activePersons.some((p) => p.id === i.personId))
+      : person
+        ? items.filter((i) => i.personId === person.id)
+        : items;
   const assignedCount = candidates.filter((i) => i.categoryIds.includes(category.id)).length;
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
       <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center mb-1">
-          <h3 className="text-xl font-bold text-slate-800">
+          <h3 className="text-xl font-bold text-slate-800 flex items-center gap-1.5 flex-wrap">
             {category.icon} {category.name}
-            {person && (
-              <span className={`ml-2 align-middle text-xs font-bold px-2 py-0.5 rounded-md border ${person.color}`}>
+            {activePersons && activePersons.length > 0 ? (
+              activePersons.map((p) => (
+                <span key={p.id} className={`text-xs font-bold px-2 py-0.5 rounded-md border ${p.color}`}>
+                  {p.icon} {p.name}
+                </span>
+              ))
+            ) : person ? (
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${person.color}`}>
                 {person.icon} {person.name}
               </span>
-            )}
+            ) : null}
           </h3>
           <button
             onClick={onClose}
