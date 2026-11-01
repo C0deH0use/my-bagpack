@@ -241,7 +241,6 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('160', 'tymek', 'Ręcznik', 'recznik', '🏖️', {wyjazd: 1, lato: 1, basen: 1}, '/items/recznik_frotte.jpg'),
   item('183', 'tymek', 'Ręcznik z kapturem (ponczo)', 'recznik_poncho', '🏖️', {basen: 1, wyjazd: 1, lato: 1}, '/items/recznik_kaptur.jpg'),
   item('161', 'tymek', 'Skarpetki', 'skarpetki', '🧦', {wyjazd: 4, lato: 4, zima: 4, narty: 4}, '/items/skarpetki.jpg'),
-  item('162', 'tymek', 'Szumiś', '', '🔊', {wyjazd: 1, lato: 1, zima: 1, narty: 1}),
   item('163', 'tymek', 'Wiaderko do kąpieli', '', '🪣', {wyjazd: 1}),
   item('164', 'tymek', 'Woreczki zapachowe', '', '🗑️', {wyjazd: 1, zima: 1, spacer: 1, lato: 1}),
 ];

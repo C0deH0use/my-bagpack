@@ -11,6 +11,7 @@ const OBSOLETE_IDS = new Set([
   '176', // Szczoteczka elektryczna katalogowa (scalona z 144)
   '177', // Szczoteczka dziecięca katalogowa
   '212', // Kubek ze szczoteczkami (zbędny wariant katalogowy)
+  '162', // Szumiś (usunięty jako zbędny)
 ]);
 
 /**
