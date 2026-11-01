@@ -5,6 +5,7 @@ import { ALL_PERSONS_ID } from '../data/persons';
 import { enrichWithDefaults, loadStoredItems, storeItems } from '../lib/storage';
 import {
   clearCloudCredentials,
+  deleteCloudGist,
   fetchRevisionItems,
   findExistingGistId,
   getGistId,
@@ -327,6 +328,51 @@ export function usePackingList() {
     [commit],
   );
 
+  /**
+   * Resetuje dane do fabrycznych DEFAULT_ITEMS z aktualnymi kategoriami.
+   * Czyści spakowanie, zapisuje w localStorage i natychmiast wysyła czystą wersję do chmury.
+   */
+  const resetToDefaults = useCallback(async (): Promise<void> => {
+    const cleanItems: PackingItem[] = DEFAULT_ITEMS.map((item) => ({
+      ...item,
+      categoryIds: [...item.categoryIds],
+      quantities: { ...item.quantities },
+      packedIn: [],
+    }));
+
+    commit(cleanItems);
+    if (isCloudConnected()) {
+      setSyncStatus('saving');
+      try {
+        await pushItemsToCloud(cleanItems);
+        setSyncError('');
+        setSyncStatus('saved');
+      } catch (e) {
+        setSyncError(errorMessage(e));
+        setSyncStatus('error');
+        throw e;
+      }
+    }
+  }, [commit]);
+
+  /**
+   * Trwale usuwa kopię w chmurze (Gist) z konta GitHub i odłącza chmurę.
+   */
+  const deleteCloud = useCallback(async (): Promise<void> => {
+    if (!isCloudConnected()) return;
+    setSyncStatus('loading');
+    try {
+      await deleteCloudGist();
+      setCloudConnected(false);
+      setSyncError('');
+      setSyncStatus('local');
+    } catch (e) {
+      setSyncError(errorMessage(e));
+      setSyncStatus('error');
+      throw e;
+    }
+  }, []);
+
   return {
     items,
     syncStatus,
@@ -344,5 +390,7 @@ export function usePackingList() {
     connectCloud,
     disconnectCloud,
     restoreRevision,
+    resetToDefaults,
+    deleteCloud,
   };
 }

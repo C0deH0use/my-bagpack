@@ -77,6 +77,7 @@ export function setGistId(id: string): void {
 export function clearCloudCredentials(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(GIST_ID_KEY);
+  localStorage.removeItem(UPDATED_KEY);
 }
 
 export function isCloudConnected(): boolean {
@@ -106,7 +107,30 @@ async function ghFetch<T>(path: string, init?: RequestInit): Promise<T> {
     if (res.status === 404) throw new Error('nie znaleziono chmurki (404)');
     throw new Error(`GitHub odpowiedział: ${res.status}`);
   }
+  if (res.status === 204) {
+    return null as T;
+  }
   return (await res.json()) as T;
+}
+
+/**
+ * Trwale usuwa Gist z konta GitHub i czyści lokalne dane połączenia.
+ */
+export async function deleteCloudGist(): Promise<void> {
+  const gistId = getGistId();
+  if (!gistId) return;
+  try {
+    await ghFetch<void>(`/gists/${gistId}`, {
+      method: 'DELETE',
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (!msg.includes('404')) {
+      throw e;
+    }
+  } finally {
+    clearCloudCredentials();
+  }
 }
 
 function buildPayload(items: PackingItem[]): string {

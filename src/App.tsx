@@ -493,6 +493,8 @@ export default function App() {
         onConnect={list.connectCloud}
         onDisconnect={list.disconnectCloud}
         onImport={handleImport}
+        onResetToDefaults={list.resetToDefaults}
+        onDeleteCloud={list.deleteCloud}
       />
 
       <HistoryModal

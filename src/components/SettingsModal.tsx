@@ -13,6 +13,8 @@ interface SettingsModalProps {
   onConnect: (token: string, joinGistId: string) => Promise<ConnectResult>;
   onDisconnect: () => void;
   onImport: (items: PackingItem[]) => void;
+  onResetToDefaults: () => Promise<void>;
+  onDeleteCloud: () => Promise<void>;
 }
 
 interface Message {
@@ -28,12 +30,16 @@ export function SettingsModal({
   onConnect,
   onDisconnect,
   onImport,
+  onResetToDefaults,
+  onDeleteCloud,
 }: SettingsModalProps) {
   const [token, setTokenInput] = useState('');
   const [joinId, setJoinId] = useState('');
   const [gistId, setGistIdState] = useState('');
   const [message, setMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Obrazki AI: konfiguracja Google (Client ID + Project ID — publiczne, nie sekrety)
@@ -114,6 +120,59 @@ export function SettingsModal({
     void navigator.clipboard.writeText(gistId).then(() => {
       setMessage({ text: 'Skopiowano ID chmurki 📋', isError: false });
     });
+  };
+
+  const handleResetToDefaults = async () => {
+    const confirmed = window.confirm(
+      cloudConnected
+        ? 'Czy na pewno chcesz przywrócić stan początkowy (czystą wersję)?\n\nSpowoduje to nadpisanie listy w tej przeglądarce ORAZ w Twojej chmurze domyślnym katalogiem przedmiotów i nowym układem kategorii (Wyjazd, Lato, Zima, Narty, Rower, Basen, Wycieczka szkolna, Spacer).\n\nDotychczasowe wersje w historii chmury pozostaną zachowane.'
+        : 'Czy na pewno chcesz przywrócić stan początkowy (czystą wersję)?\n\nSpowoduje to nadpisanie listy w tej przeglądarce domyślnym katalogiem przedmiotów i nowym układem kategorii.',
+    );
+    if (!confirmed) return;
+
+    setResetBusy(true);
+    setMessage(null);
+    try {
+      await onResetToDefaults();
+      setMessage({
+        text: cloudConnected
+          ? 'Zresetowano listę do nowej czystej wersji i zaktualizowano chmurę! 🎉'
+          : 'Zresetowano listę do nowej czystej wersji! 🎉',
+        isError: false,
+      });
+    } catch (e) {
+      setMessage({
+        text: 'Błąd podczas resetowania: ' + (e instanceof Error ? e.message : String(e)),
+        isError: true,
+      });
+    } finally {
+      setResetBusy(false);
+    }
+  };
+
+  const handleDeleteCloud = async () => {
+    const confirmed = window.confirm(
+      'UWAGA: Czy na pewno chcesz całkowicie skasować swoją kopię w chmurze z konta GitHub?\n\nChmurka (Gist) zostanie trwale usunięta z Twojego konta GitHub, a aplikacja zostanie rozłączona. Rzeczy zapisane lokalnie w tej przeglądarce NIE zostaną usunięte.',
+    );
+    if (!confirmed) return;
+
+    setDeleteBusy(true);
+    setMessage(null);
+    try {
+      await onDeleteCloud();
+      setGistIdState('');
+      setMessage({
+        text: 'Chmurka została trwale usunięta z GitHub. Aplikacja działa teraz w trybie lokalnym. 🗑️',
+        isError: false,
+      });
+    } catch (e) {
+      setMessage({
+        text: 'Nie udało się usunąć chmurki: ' + (e instanceof Error ? e.message : String(e)),
+        isError: true,
+      });
+    } finally {
+      setDeleteBusy(false);
+    }
   };
 
   const handleExport = () => {
@@ -248,6 +307,44 @@ export function SettingsModal({
             >
               Odłącz chmurę
             </button>
+          </div>
+
+          {/* Sekcja: Reset i czysta wersja */}
+          <div className="border-t border-slate-100 pt-4">
+            <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+              Reset i czysta wersja
+            </label>
+            <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
+              Przydatne, gdy chcesz zacząć od zera z nowym układem 8 kategorii i zresetować zapisane kopie do wersji fabrycznej.
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => void handleResetToDefaults()}
+                disabled={resetBusy || busy || deleteBusy}
+                className="w-full px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              >
+                <span>{resetBusy ? '⏳ Resetowanie…' : '🔄'}</span>
+                <span>
+                  {cloudConnected
+                    ? 'Zresetuj chmurę i pamięć do czystej wersji domyślnej'
+                    : 'Zresetuj listę do czystej wersji domyślnej'}
+                </span>
+              </button>
+
+              {cloudConnected && (
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteCloud()}
+                  disabled={deleteBusy || busy || resetBusy}
+                  className="w-full px-4 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  <span>{deleteBusy ? '⏳ Usuwanie…' : '🗑️'}</span>
+                  <span>Skasuj zapisaną kopię w chmurze (usuń Gist z GitHub)</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Obrazki AI — na razie wyłączone: flaga AI_FEATURE_ENABLED w src/lib/ai/config.ts */}
