@@ -7,8 +7,7 @@ const OBSOLETE_IDS = new Set([
   '18',  // Pieprz (scalony z 27 Sól, pieprz i przyprawy)
   '173', // Koc turystyczny (zastąpiony przez Koc czarny 7)
   '195', // Pieluszka wielorazowa
-  '125', // Pasta do zębów Ani (przeniesiona do 181 Pasty do zębów we wspólnych)
-  '182', // Pasta truskawkowa (zbędny wariant katalogowy)
+  '182', // Pasta truskawkowa (zbędny stary wariant katalogowy)
   '176', // Szczoteczka elektryczna katalogowa (scalona z 144)
   '177', // Szczoteczka dziecięca katalogowa
   '212', // Kubek ze szczoteczkami (zbędny wariant katalogowy)
