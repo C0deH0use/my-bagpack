@@ -42,6 +42,10 @@ PROMPTS = [
         "filename": "kapcie.jpg",
         "prompt": "A pair of cozy, fluffy indoor house slippers (papucie domowe) with fully enclosed rounded toes and closed back for a young child, placed side by side angled in 3/4 view in a charming 2D cartoon cel-shaded animation series style. NOT sandals, NOT flip-flops, NOT open toes. Features: ultra-soft plush pink fleece material with white faux-fur fleece lining around the ankle opening, a cute little embroidered golden sleeping star on the top of each slipper, and a thick flat soft non-slip sole. Clean bold dark ink outlines, smooth flat cel-shading, centered on pure solid flat white background (#ffffff) with soft drop shadow. No feet, no human, no watermark."
     },
+    {
+        "filename": "kapcie_dorosli.jpg",
+        "prompt": "A pair of comfortable classic slip-on mule house slippers for adults laid side by side in 3/4 view in a charming 2D cartoon cel-shaded animation series style. Features: dark navy blue felt upper with soft cream fleece lining and piped collar, a small subtle silver embroidered star motif, and a durable flat indoor foam rubber sole. Clean bold dark ink outlines, smooth cel-shading, centered on pure solid flat white background (#ffffff) with soft drop shadow underneath. No feet, no text, no watermark."
+    },
 
     # Grupa B: Koce
     {
