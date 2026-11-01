@@ -106,7 +106,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'szczoteczki_pasty', name: 'Pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
   { id: 'szczoteczki_pasty_etui', name: 'Etui podróżne na szczoteczkę i pastę', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_etui.jpg' },
   { id: 'szczoteczki_pasty_kubek', name: 'Kubek ze szczoteczkami i pastą', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_kubek.jpg' },
-  { id: 'szczoteczka_elektryczna', name: 'Szczoteczka do zębów elektryczna wspólna', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_elektryczna.jpg' },
+  { id: 'szczoteczka_elektryczna', name: 'Szczoteczka do zębów elektryczna - dla Aga/Marek', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_elektryczna.jpg' },
   { id: 'szczoteczka_dziecieca', name: 'Szczoteczka do zębów elektryczna dziecięca', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_dziecieca.jpg' },
 
   // ——— 🔌 Elektronika & Ładowarki ———

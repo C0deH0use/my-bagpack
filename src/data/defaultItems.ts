@@ -73,7 +73,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('26', 'wspolne', 'Scyzoryk', '', '🔪', {wyjazd: 1, rower: 1}, '/items/scyzoryk.jpg'),
   item('27', 'wspolne', 'Sól, pieprz i przyprawy', '', '🧂', {wyjazd: 1}),
   item('28', 'wspolne', 'Szampon', '', '🧴', {wyjazd: 1, lato: 1, zima: 1, narty: 1, basen: 1}),
-  item('29', 'wspolne', 'Szczoteczka do zębów elektryczna wspólna', 'szczoteczka_elektryczna', '🪥', {wyjazd: 1, lato: 1, zima: 1, narty: 1}, '/items/szczoteczka_elektryczna.jpg'),
+  item('29', 'wspolne', 'Szczoteczka do zębów elektryczna - dla Aga/Marek', 'szczoteczka_elektryczna', '🪥', {wyjazd: 1, lato: 1, zima: 1, narty: 1}, '/items/szczoteczka_elektryczna.jpg'),
   item('181', 'wspolne', 'Pasta do zębów - Aga/Marek', 'szczoteczki_pasty', '🧴', {wyjazd: 1, lato: 1, zima: 1, narty: 1}, '/items/szczoteczki_pasty.jpg'),
   item('30', 'wspolne', 'Termos', 'termos', '☕', {wyjazd: 1, zima: 1, narty: 1, rower: 1}, '/items/termos.jpg'),
   item('208', 'wspolne', 'Termos obiadowy (food jar)', 'termos_obiadowy', '🍲', {} /* tylko katalog */, '/items/termos_obiadowy.jpg'),
