@@ -3,6 +3,8 @@ import { normalizeItems } from './items';
 
 const STORAGE_KEY = 'kids_packing_list_data_v3';
 
+const OBSOLETE_IDS = new Set(['18', '173', '195']); // 18 (Pieprz scalony z Solą 27), 173 (Koc turystyczny -> Koc czarny 7), 195 (Pieluszka wielorazowa)
+
 /**
  * Wzbogaca listę rzeczy (z localStorage lub z chmury Gist) o aktualne dane z katalogu domyślnego:
  * 1. Dopasowuje po `id`, a pomocniczo po `personId` + `name`.
@@ -12,10 +14,15 @@ const STORAGE_KEY = 'kids_packing_list_data_v3';
  * 5. Dołącza nowo dodane pozycje z katalogu domyślnego (np. szlafrok, termos obiadowy).
  */
 export function enrichWithDefaults(items: PackingItem[], fallback: PackingItem[]): PackingItem[] {
+  // Usuwamy pozycje wycofane lub scalone ze starych wersji lokalnych
+  const cleanedItems = items.filter(
+    (item) => !OBSOLETE_IDS.has(item.id) && item.name.trim().toLowerCase() !== 'pieprz'
+  );
+
   const fallbackById = new Map(fallback.map((f) => [f.id, f]));
   const fallbackByName = new Map(fallback.map((f) => [`${f.personId}\u0000${f.name.trim().toLowerCase()}`, f]));
 
-  for (const item of items) {
+  for (const item of cleanedItems) {
     const fb =
       fallbackById.get(item.id) ??
       fallbackByName.get(`${item.personId}\u0000${item.name.trim().toLowerCase()}`);
@@ -28,11 +35,9 @@ export function enrichWithDefaults(items: PackingItem[], fallback: PackingItem[]
       if (fb.svgKey && !item.svgKey) {
         item.svgKey = fb.svgKey;
       }
-      // Aktualizacja starych nazw dla domyślnych wpisów dopasowanych po ID
+      // Aktualizacja kanonicznych nazw dla domyślnych wpisów dopasowanych po ID
       if (fb.id === item.id && fb.name !== item.name) {
-        if (item.name === 'Lampka - czołówka') {
-          item.name = fb.name;
-        }
+        item.name = fb.name;
       }
       if (fb.emoji && (!item.emoji || item.emoji === '📦')) {
         item.emoji = fb.emoji;
@@ -54,13 +59,13 @@ export function enrichWithDefaults(items: PackingItem[], fallback: PackingItem[]
     }
   }
 
-  const storedIds = new Set(items.map((i) => i.id));
-  const storedKeys = new Set(items.map((i) => `${i.personId}\u0000${i.name.trim().toLowerCase()}`));
+  const storedIds = new Set(cleanedItems.map((i) => i.id));
+  const storedKeys = new Set(cleanedItems.map((i) => `${i.personId}\u0000${i.name.trim().toLowerCase()}`));
   const newItems = fallback.filter(
     (fb) => !storedIds.has(fb.id) && !storedKeys.has(`${fb.personId}\u0000${fb.name.trim().toLowerCase()}`)
   );
 
-  return newItems.length > 0 ? [...items, ...newItems] : items;
+  return newItems.length > 0 ? [...cleanedItems, ...newItems] : cleanedItems;
 }
 
 export function loadStoredItems(fallback: PackingItem[]): PackingItem[] {
