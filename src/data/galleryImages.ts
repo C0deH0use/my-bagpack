@@ -103,10 +103,10 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'zel_do_mycia_twarzy', name: 'Żel do mycia twarzy (dermokosmetyk)', category: 'Higiena & Kosmetyczka', url: '/items/zel_do_mycia_twarzy.jpg' },
   { id: 'krem_opalanie', name: 'Krem do opalania (SPF 50)', category: 'Higiena & Kosmetyczka', url: '/items/krem_opalanie.jpg' },
   { id: 'pomadka', name: 'Pomadka ochronna do ust', category: 'Higiena & Kosmetyczka', url: '/items/pomadka.jpg' },
-  { id: 'szczoteczki_pasty', name: 'Szczoteczki i pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
+  { id: 'szczoteczki_pasty', name: 'Pasty do zębów', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty.jpg' },
   { id: 'szczoteczki_pasty_etui', name: 'Etui podróżne na szczoteczkę i pastę', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_etui.jpg' },
   { id: 'szczoteczki_pasty_kubek', name: 'Kubek ze szczoteczkami i pastą', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczki_pasty_kubek.jpg' },
-  { id: 'szczoteczka_elektryczna', name: 'Szczoteczka soniczna / elektryczna', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_elektryczna.jpg' },
+  { id: 'szczoteczka_elektryczna', name: 'Szczoteczka do zębów elektryczna', category: 'Higiena & Kosmetyczka', url: '/items/szczoteczka_elektryczna.jpg' },
 
   // ——— 🔌 Elektronika & Ładowarki ———
   { id: 'airtag_bagaz', name: 'AirTag do bagażu rejestrowanego', category: 'Elektronika & Kable', url: '/items/airtag_bagaz.png' },

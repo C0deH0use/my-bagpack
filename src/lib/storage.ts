@@ -3,7 +3,16 @@ import { normalizeItems } from './items';
 
 const STORAGE_KEY = 'kids_packing_list_data_v3';
 
-const OBSOLETE_IDS = new Set(['18', '173', '195']); // 18 (Pieprz scalony z Solą 27), 173 (Koc turystyczny -> Koc czarny 7), 195 (Pieluszka wielorazowa)
+const OBSOLETE_IDS = new Set([
+  '18',  // Pieprz (scalony z 27 Sól, pieprz i przyprawy)
+  '173', // Koc turystyczny (zastąpiony przez Koc czarny 7)
+  '195', // Pieluszka wielorazowa
+  '125', // Pasta do zębów Ani (przeniesiona do 181 Pasty do zębów we wspólnych)
+  '182', // Pasta truskawkowa (zbędny wariant katalogowy)
+  '176', // Szczoteczka elektryczna katalogowa (scalona z 144)
+  '177', // Szczoteczka dziecięca katalogowa
+  '212', // Kubek ze szczoteczkami (zbędny wariant katalogowy)
+]);
 
 /**
  * Wzbogaca listę rzeczy (z localStorage lub z chmury Gist) o aktualne dane z katalogu domyślnego:
