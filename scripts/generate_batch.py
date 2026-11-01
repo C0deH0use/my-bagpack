@@ -29,6 +29,12 @@ OUTPUT_DIR = Path(__file__).resolve().parent.parent / "public" / "items"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 PROMPTS = [
+    # Narzędzia & Akcesoria
+    {
+        "filename": "scyzoryk.jpg",
+        "prompt": "A classic red Swiss army multi-tool pocket knife (scyzoryk turystyczny) resting angled in a dynamic 3/4 perspective view, in a charming 2D cartoon cel-shaded animation series style (aesthetic of Bluey and Gravity Falls). Features: Iconic glossy cherry-red rounded handle scales with a subtle clean white shield cross emblem on the side. The main stainless-steel knife blade is neatly unfolded, along with a small pair of folding scissors and a tiny can opener/corkscrew partially visible. Bold clean dark ink outlines, smooth flat cel-shading with bright shiny metallic blade highlights and reflections. Centered composition isolated on a pure flat solid white background (#ffffff) with a soft subtle grey drop shadow underneath. No human hands, no text, no watermark."
+    },
+
     # Grupa A: Obuwie
     {
         "filename": "buty_trekkingowe.jpg",

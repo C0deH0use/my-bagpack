@@ -13,7 +13,8 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'kubek_termiczny', name: 'Kubek termiczny z ustnikiem', category: 'Termosy & Kuchnia', url: '/items/kubek_termiczny.jpg' },
   { id: 'menazka', name: 'Menażka turystyczna (zestaw biwakowy)', category: 'Termosy & Kuchnia', url: '/items/menazka.jpg' },
 
-  // ——— 🍾 Korkociągi & Otwieracze ———
+  // ——— 🍾 Korkociągi & Narzędzia ———
+  { id: 'scyzoryk', name: 'Scyzoryk turystyczny (wielofunkcyjny)', category: 'Akcesoria & Narzędzia', url: '/items/scyzoryk.jpg' },
   { id: 'otwieracz_do_wina', name: 'Otwieracz do wina (trybuszon)', category: 'Akcesoria & Narzędzia', url: '/items/otwieracz_do_wina.jpg' },
   { id: 'korkociag_motylkowy', name: 'Korkociąg skrzydełkowy (motylkowy)', category: 'Akcesoria & Narzędzia', url: '/items/korkociag_motylkowy.jpg' },
   { id: 'korkociag_drewniany', name: 'Korkociąg tradycyjny (T-bar)', category: 'Akcesoria & Narzędzia', url: '/items/korkociag_drewniany.jpg' },

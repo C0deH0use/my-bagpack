@@ -70,7 +70,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('23', 'wspolne', 'Przedłużacz', '', '🔌', {wyjazd: 1, zima: 1, narty: 1}),
   item('24', 'wspolne', 'Prześcieradło', '', '🛏️', {wyjazd: 1}),
   item('25', 'wspolne', 'Repelent na komary', '', '🦟', {wyjazd: 1, lato: 1, spacer: 1, rower: 1}),
-  item('26', 'wspolne', 'Scyzoryk', '', '🔪', {wyjazd: 1, rower: 1}),
+  item('26', 'wspolne', 'Scyzoryk', '', '🔪', {wyjazd: 1, rower: 1}, '/items/scyzoryk.jpg'),
   item('27', 'wspolne', 'Sól, pieprz i przyprawy', '', '🧂', {wyjazd: 1}),
   item('28', 'wspolne', 'Szampon', '', '🧴', {wyjazd: 1, lato: 1, zima: 1, narty: 1, basen: 1}),
   item('29', 'wspolne', 'Szczoteczki i pasty do zębów', 'szczoteczki_pasty', '🪥', {wyjazd: 1, lato: 1, zima: 1, narty: 1}, '/items/szczoteczki_pasty.jpg'),

@@ -204,16 +204,19 @@ export function usePackingList() {
    * Z podanym kontekstem osoby odznacza tylko JEJ rzeczy w tej kategorii.
    */
   const resetCategory = useCallback(
-    (categoryId: string, personId: string = ALL_PERSONS_ID): PackingItem[] =>
-      commit(
+    (categoryId: string, personFilter: string | string[] = ALL_PERSONS_ID): PackingItem[] => {
+      const filterArray = Array.isArray(personFilter) ? personFilter : [personFilter];
+      const isAll = filterArray.includes(ALL_PERSONS_ID);
+      return commit(
         itemsRef.current.map((item) => {
-          if (personId !== ALL_PERSONS_ID && item.personId !== personId) return item;
+          if (!isAll && !filterArray.includes(item.personId)) return item;
           return {
             ...item,
             packedIn: categoryId === 'all' ? [] : item.packedIn.filter((c) => c !== categoryId),
           };
         }),
-      ),
+      );
+    },
     [commit],
   );
 
