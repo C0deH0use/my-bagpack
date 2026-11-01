@@ -37,6 +37,20 @@ export function enrichWithDefaults(items: PackingItem[], fallback: PackingItem[]
       if (fb.emoji && (!item.emoji || item.emoji === '📦')) {
         item.emoji = fb.emoji;
       }
+      // Jeśli rzecz zyskała nowe precyzyjne kategorie w katalogu (np. narty, wycieczka_szkolna)
+      // lub miała tylko generyczną kategorię 'wyjazd' z dawnego Notion:
+      const onlyGenericWyjazd = item.categoryIds.length === 1 && item.categoryIds[0] === 'wyjazd';
+      if ((onlyGenericWyjazd || item.categoryIds.length === 0) && fb.categoryIds.length > 0) {
+        item.categoryIds = [...fb.categoryIds];
+        item.quantities = { ...fb.quantities };
+      } else {
+        for (const catId of fb.categoryIds) {
+          if (!item.categoryIds.includes(catId) && (catId === 'narty' || catId === 'wycieczka_szkolna')) {
+            item.categoryIds.push(catId);
+            item.quantities[catId] = fb.quantities[catId] ?? 1;
+          }
+        }
+      }
     }
   }
 

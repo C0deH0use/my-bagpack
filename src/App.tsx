@@ -19,7 +19,7 @@ import { HistoryModal } from './components/HistoryModal';
 import { ConfettiCanvas, type ConfettiHandle } from './components/ConfettiCanvas';
 
 export default function App() {
-  const [currentCategoryId, setCurrentCategoryId] = useState('ogolne');
+  const [currentCategoryId, setCurrentCategoryId] = useState('wyjazd');
   /** kontekst osoby: "kto pakuje" — filtruje rzeczy w kategorii i katalogu */
   const [currentPersonId, setCurrentPersonId] = useState(ALL_PERSONS_ID);
   const [itemModalOpen, setItemModalOpen] = useState(false);

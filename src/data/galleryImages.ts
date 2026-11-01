@@ -125,4 +125,5 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   // ——— 🎨 Dziecięce & Zabawa ———
   { id: 'blok_rysunkowy', name: 'Blok rysunkowy / kolorowanka (Ania)', category: 'Dziecięce & Zabawa', url: '/items/blok_rysunkowy.jpg' },
   { id: 'kredki', name: 'Kredki w piórniku (Ania)', category: 'Dziecięce & Zabawa', url: '/items/kredki.jpg' },
+  { id: 'piornik', name: 'Piórnik szkolny z chmurką (Ania)', category: 'Dziecięce & Zabawa', url: '/items/piornik.jpg' },
 ];

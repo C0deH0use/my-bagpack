@@ -54,6 +54,24 @@ export function normalizeItems(raw: unknown): PackingItem[] {
   return mergeSameNameItems(items);
 }
 
+/** Migracja starych ID kategorii (z Notion / starszych wersji aplikacji) do nowego układu */
+const LEGACY_CATEGORY_MAP: Record<string, string> = {
+  ogolne: 'wyjazd',
+  turystyczne: 'wyjazd',
+  zagranica: 'wyjazd',
+  samolot: 'wyjazd',
+  gospodarcze: 'wyjazd',
+  higiena: 'wyjazd',
+  leki: 'wyjazd',
+  zabawa: 'wyjazd',
+  rowery: 'rower',
+  wycieczka: 'wycieczka_szkolna',
+};
+
+function remapCategory(cat: string): string {
+  return LEGACY_CATEGORY_MAP[cat] ?? cat;
+}
+
 function readPersonId(legacy: LegacyItem): string {
   if (typeof legacy.personId === 'string' && PERSONS.some((p) => p.id === legacy.personId)) {
     return legacy.personId;
@@ -62,13 +80,13 @@ function readPersonId(legacy: LegacyItem): string {
 }
 
 function readCategoryIds(legacy: LegacyItem): string[] {
+  let raw: string[] = [];
   if (Array.isArray(legacy.categoryIds)) {
-    return legacy.categoryIds.filter((c): c is string => typeof c === 'string');
+    raw = legacy.categoryIds.filter((c): c is string => typeof c === 'string');
+  } else if (typeof legacy.categoryId === 'string' && legacy.categoryId) {
+    raw = [legacy.categoryId];
   }
-  if (typeof legacy.categoryId === 'string' && legacy.categoryId) {
-    return [legacy.categoryId];
-  }
-  return [];
+  return [...new Set(raw.map(remapCategory))];
 }
 
 function readQuantities(legacy: LegacyItem, categoryIds: string[]): Record<string, number> {
@@ -77,7 +95,8 @@ function readQuantities(legacy: LegacyItem, categoryIds: string[]): Record<strin
   if (legacy.quantities && typeof legacy.quantities === 'object') {
     for (const [key, value] of Object.entries(legacy.quantities)) {
       if (typeof value === 'number' && Number.isFinite(value)) {
-        result[key] = clampQty(value);
+        const remapped = remapCategory(key);
+        result[remapped] = Math.max(result[remapped] ?? 0, clampQty(value));
       }
     }
   }
@@ -91,7 +110,10 @@ function readQuantities(legacy: LegacyItem, categoryIds: string[]): Record<strin
 
 function readPackedIn(legacy: LegacyItem, categoryIds: string[]): string[] {
   if (Array.isArray(legacy.packedIn)) {
-    return legacy.packedIn.filter((c): c is string => typeof c === 'string' && categoryIds.includes(c));
+    const remapped = legacy.packedIn
+      .filter((c): c is string => typeof c === 'string')
+      .map(remapCategory);
+    return [...new Set(remapped.filter((c) => categoryIds.includes(c)))];
   }
   // bardzo stary format: packed=true dotyczyło wszystkich kategorii rzeczy
   if (legacy.packed === true) return [...categoryIds];

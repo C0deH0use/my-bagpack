@@ -107,6 +107,10 @@ PROMPTS = [
     {
         "filename": "kredki.jpg",
         "prompt": "A cheerful pencil case with a colorful fan of freshly sharpened wooden colored pencils, in a charming 2D cartoon cel-shaded animation series style. Features: a fabric zippered pencil pouch in teal and yellow, with sharp colored pencils peeking out in a neat spread (red, yellow, blue, green, orange, purple). Clean bold dark ink outlines, smooth cel-shading with soft highlights, centered on pure solid flat white background (#ffffff) with soft drop shadow underneath. No text, no watermark."
+    },
+    {
+        "filename": "piornik.jpg",
+        "prompt": "A charming children's zippered pencil case (piórnik szkolny) lying closed at a pleasant 3/4 angle, in a 2D cartoon cel-shaded animation series style (aesthetic of Bluey and Gravity Falls). Features: High-quality durable fabric pencil pouch in cheerful pastel teal-mint and sunny yellow colors, with a smooth lilac zipper and a cute rubber zipper pull shaped like a smiling cloud. Pouch is neatly zipped shut, showing its stylish rounded rectangular barrel shape, clean contrast stitching, and a small front mesh pocket. Bold dark ink outlines, clean flat cel-shading with soft highlights, centered composition isolated on a pure flat solid white background (#ffffff) with soft subtle drop shadow underneath. No pencils sticking out, no text, no watermark."
     }
 ]
 
