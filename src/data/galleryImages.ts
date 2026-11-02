@@ -93,6 +93,7 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { id: 'szlafrok_tygrysek', name: 'Szlafrok pluszowy tygrysek (Ania)', category: 'Ręczniki & Kąpiel', url: '/items/szlafrok_tygrysek.jpg' },
 
   // ——— 🏊‍♀️ Basen & Woda ———
+  { id: 'okularki_plywanie', name: 'Okularki do pływania', category: 'Basen & Pływanie', url: '/items/okularki_plywanie.jpg' },
   { id: 'maska_nurkowanie', name: 'Maska i rurka do nurkowania', category: 'Basen & Pływanie', url: '/items/maska_nurkowanie.png' },
   { id: 'klapki', name: 'Klapki basenowe / Japonki', category: 'Basen & Pływanie', url: '/items/klapki.jpg' },
   { id: 'czepek_blekitny', name: 'Czepek basenowy błękitny', category: 'Basen & Pływanie', url: '/items/czepek_blekitny.jpg' },

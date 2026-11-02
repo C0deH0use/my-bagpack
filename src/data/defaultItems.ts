@@ -191,7 +191,7 @@ export const DEFAULT_ITEMS: PackingItem[] = [
   item('120', 'ania', 'Latawiec', '', '🪁', {wyjazd: 1, lato: 1}),
   item('121', 'ania', 'Majtki', 'majtki', '🩲', {wyjazd: 5, zima: 5, lato: 5, narty: 5, wycieczka_szkolna: 1}),
   item('122', 'ania', 'Odzież termiczna', '', '❄️', {zima: 1, narty: 1, rower: 1}, '/items/odziez_termiczna_ania.jpg'),
-  item('123', 'ania', 'Okularki do pływania', 'okularki_basen', '🤿', {basen: 1, lato: 1}),
+  item('123', 'ania', 'Okularki do pływania', 'okularki_plywanie', '🤿', {basen: 1, lato: 1}, '/items/okularki_plywanie.jpg'),
   item('124', 'ania', 'Okulary przeciwsłoneczne', 'okulary', '🕶️', {lato: 1, spacer: 1, rower: 1, narty: 1, wycieczka_szkolna: 1}),
   item('125', 'ania', 'Pasta do zębów - Ania', 'szczoteczki_pasty', '🍓', {wyjazd: 1, lato: 1, zima: 1, narty: 1, wycieczka_szkolna: 1}, '/items/szczoteczki_pasty.jpg'),
   item('126', 'ania', 'Perełki (lekarstwa)', 'lekarstwa', '💊', {wyjazd: 1, lato: 1, zima: 1, narty: 1, wycieczka_szkolna: 1}, '/items/lekarstwa.jpg'),
